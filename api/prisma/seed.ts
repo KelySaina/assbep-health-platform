@@ -76,6 +76,27 @@ async function main() {
   }
   console.log(`✅ ${partners.length} partners seeded`);
 
+  // Create resources
+  const resources = [
+    { type: 'guide', fileUrl: '#', published: true, order: 1, translations: [{ language: 'en', title: 'Maternal Health Guide', description: 'Comprehensive guide for expectant mothers covering prenatal care essentials.' }, { language: 'fr', title: 'Guide de Santé Maternelle', description: 'Guide complet pour les futures mères couvrant les soins prénataux essentiels.' }] },
+    { type: 'guide', fileUrl: '#', published: true, order: 2, translations: [{ language: 'en', title: 'Nutrition Handbook', description: 'A practical guide to balanced nutrition for families on a budget.' }, { language: 'fr', title: 'Manuel de Nutrition', description: 'Un guide pratique pour une nutrition équilibrée pour les familles à petit budget.' }] },
+    { type: 'video', fileUrl: '#', published: true, order: 3, translations: [{ language: 'en', title: 'Vaccination Awareness', description: 'Video explaining the importance of childhood vaccination.' }, { language: 'fr', title: 'Sensibilisation à la Vaccination', description: 'Vidéo expliquant l\'importance de la vaccination des enfants.' }] },
+    { type: 'video', fileUrl: '#', published: true, order: 4, translations: [{ language: 'en', title: 'Community Health Workshop', description: 'Recording of our latest community health awareness workshop.' }, { language: 'fr', title: 'Atelier de Santé Communautaire', description: 'Enregistrement de notre dernier atelier de sensibilisation à la santé communautaire.' }] },
+    { type: 'document', fileUrl: '#', published: true, order: 5, translations: [{ language: 'en', title: 'Annual Health Report 2025', description: 'ASSBEP annual health impact report with statistics and outcomes.' }, { language: 'fr', title: 'Rapport de Santé Annuel 2025', description: 'Rapport d\'impact annuel sur la santé de l\'ASSBEP avec statistiques et résultats.' }] },
+    { type: 'document', fileUrl: '#', published: true, order: 6, translations: [{ language: 'en', title: 'Hygiene Best Practices', description: 'Printable document on daily hygiene practices for community distribution.' }, { language: 'fr', title: 'Meilleures Pratiques d\'Hygiène', description: 'Document imprimable sur les pratiques d\'hygiène quotidiennes pour la distribution communautaire.' }] },
+  ];
+
+  for (const r of resources) {
+    const { translations, ...resourceData } = r;
+    await prisma.resource.create({
+      data: {
+        ...resourceData,
+        translations: { create: translations },
+      },
+    });
+  }
+  console.log(`✅ ${resources.length} resources seeded`);
+
   // Create site settings
   const settings = [
     { key: 'site_name', value: 'ASSBEP Health Platform' },
@@ -84,6 +105,8 @@ async function main() {
     { key: 'contact_phone', value: '+237 6XX XXX XXX' },
     { key: 'contact_email', value: 'contact@assbep.org' },
     { key: 'office_hours', value: 'Mon-Fri 8:00 AM - 5:00 PM' },
+    { key: 'stat_people_helped', value: '25000' },
+    { key: 'stat_volunteers', value: '350' },
   ];
 
   for (const s of settings) {

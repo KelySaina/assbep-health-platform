@@ -68,22 +68,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { Resource } from '@/types'
+import { ref, computed, onMounted } from 'vue'
+import { useAppStore } from '@/stores/app'
 
+const store = useAppStore()
 const activeTab = ref('guides')
 const resourceCategories = ['guides', 'videos', 'documents']
 
-const mockResources: Resource[] = [
-  { id: 1, title: 'Maternal Health Guide', description: 'Comprehensive guide for expectant mothers covering prenatal care essentials.', file: '#', type: 'guide', language: 'en', category: 'guides' },
-  { id: 2, title: 'Nutrition Handbook', description: 'A practical guide to balanced nutrition for families on a budget.', file: '#', type: 'guide', language: 'en', category: 'guides' },
-  { id: 3, title: 'Vaccination Awareness', description: 'Video explaining the importance of childhood vaccination.', file: '#', type: 'video', language: 'en', category: 'videos' },
-  { id: 4, title: 'Community Health Workshop', description: 'Recording of our latest community health awareness workshop.', file: '#', type: 'video', language: 'en', category: 'videos' },
-  { id: 5, title: 'Annual Health Report 2025', description: 'ASSBEP annual health impact report with statistics and outcomes.', file: '#', type: 'document', language: 'en', category: 'documents' },
-  { id: 6, title: 'Hygiene Best Practices', description: 'Printable document on daily hygiene practices for community distribution.', file: '#', type: 'document', language: 'en', category: 'documents' },
-]
+const filteredResources = computed(() => {
+  return store.resources.filter((r) => r.category === activeTab.value)
+})
 
-const filteredResources = computed(() =>
-  mockResources.filter((r) => r.category === activeTab.value)
-)
+onMounted(() => {
+  store.loadResources()
+})
 </script>

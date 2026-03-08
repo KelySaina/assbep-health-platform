@@ -107,17 +107,67 @@
 </template>
 
 <script setup lang="ts">
-const dashboardStats = [
-  { key: 'total_programs', value: 48, change: 12, bgColor: 'bg-blue-100', iconColor: 'text-blue-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>' },
-  { key: 'total_articles', value: 124, change: 8, bgColor: 'bg-green-100', iconColor: 'text-green-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>' },
-  { key: 'total_users', value: 15, change: 5, bgColor: 'bg-purple-100', iconColor: 'text-purple-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>' },
-  { key: 'contact_requests', value: 32, change: 15, bgColor: 'bg-orange-100', iconColor: 'text-orange-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>' },
-]
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { useToast } from 'vue-toastification'
 
-const recentArticles = [
-  { id: 1, title: 'Improving Maternal Health', category: 'Community News', date: 'Mar 1, 2026' },
-  { id: 2, title: 'Vaccination Drive Milestone', category: 'Community News', date: 'Feb 20, 2026' },
-  { id: 3, title: '5 Tips for Healthy Eating', category: 'Health Tips', date: 'Feb 15, 2026' },
-  { id: 4, title: 'Annual Health Report', category: 'Reports', date: 'Feb 10, 2026' },
-]
+const toast = useToast()
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
+
+const dashboardStats = ref([
+  { key: 'total_programs', value: 0, change: 12, bgColor: 'bg-blue-100', iconColor: 'text-blue-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>' },
+  { key: 'total_articles', value: 0, change: 8, bgColor: 'bg-green-100', iconColor: 'text-green-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>' },
+  { key: 'total_users', value: 0, change: 5, bgColor: 'bg-purple-100', iconColor: 'text-purple-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>' },
+  { key: 'contact_requests', value: 0, change: 15, bgColor: 'bg-orange-100', iconColor: 'text-orange-600', icon: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>' },
+])
+
+const recentArticles = ref<any[]>([])
+
+const loadDashboardData = async () => {
+  try {
+    // Load stats
+    const statsResponse = await axios.get(`${apiUrl}/settings/stats`)
+    const stats = statsResponse.data
+
+    // Update stats values
+    const programsStat = dashboardStats.value.find(s => s.key === 'total_programs')
+    if (programsStat) programsStat.value = stats.programs_launched || 0
+
+    const partnersStat = dashboardStats.value.find(s => s.key === 'total_articles')
+    if (partnersStat) {
+      const articlesResponse = await axios.get(`${apiUrl}/articles/admin`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+        }
+      })
+      partnersStat.value = articlesResponse.data.length || 0
+
+      // Set recent articles (first 4)
+      recentArticles.value = articlesResponse.data.slice(0, 4).map((article: any) => ({
+        id: article.id,
+        title: article.title_en || article.title_fr || 'Untitled',
+        category: article.category_en || article.category_fr || 'General',
+        date: new Date(article.published_at || article.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      }))
+    }
+
+    const usersStat = dashboardStats.value.find(s => s.key === 'total_users')
+    if (usersStat) {
+      const usersResponse = await axios.get(`${apiUrl}/users`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+        }
+      })
+      usersStat.value = usersResponse.data.length || 0
+    }
+
+  } catch (error) {
+    console.error('Error loading dashboard data:', error)
+    toast.error('Failed to load dashboard data')
+  }
+}
+
+onMounted(() => {
+  loadDashboardData()
+})
 </script>

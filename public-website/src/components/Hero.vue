@@ -36,11 +36,11 @@
               </svg>
             </div>
             <div class="absolute -top-4 -right-4 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
-              <div class="text-2xl font-bold">25K+</div>
+              <div class="text-2xl font-bold">{{ formatNumber(store.stats.find(s => s.key === 'people_helped')?.value || 0) }}</div>
               <div class="text-xs text-blue-200">{{ $t('stats.people_helped') }}</div>
             </div>
             <div class="absolute -bottom-4 -left-4 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
-              <div class="text-2xl font-bold">48</div>
+              <div class="text-2xl font-bold">{{ store.stats.find(s => s.key === 'programs_launched')?.value || 0 }}</div>
               <div class="text-xs text-blue-200">{{ $t('stats.programs_launched') }}</div>
             </div>
           </div>
@@ -49,3 +49,16 @@
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+import { useAppStore } from '@/stores/app'
+
+const store = useAppStore()
+
+const formatNumber = (num: number) => {
+  if (num >= 1000) {
+    return (num / 1000).toFixed(0) + 'K+'
+  }
+  return num.toString()
+}
+</script>

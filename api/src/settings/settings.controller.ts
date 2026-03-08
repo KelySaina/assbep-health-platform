@@ -11,6 +11,11 @@ export class SettingsController {
     return this.settingsService.findAll();
   }
 
+  @Get('stats')
+  getStats() {
+    return this.settingsService.getStats();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   upsertMany(@Body() body: Record<string, string>) {

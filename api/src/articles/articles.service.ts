@@ -31,9 +31,33 @@ export class ArticlesService {
   }
 
   async findAllAdmin() {
-    return this.prisma.article.findMany({
+    const articles = await this.prisma.article.findMany({
       include: { translations: true, author: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
+    });
+
+    // Flatten translations for admin UI
+    return articles.map(a => {
+      const enTranslation = a.translations.find(t => t.language === 'en');
+      const frTranslation = a.translations.find(t => t.language === 'fr');
+
+      return {
+        id: a.id,
+        slug: a.slug,
+        category: a.category,
+        image: a.image,
+        published: a.published,
+        publishedAt: a.publishedAt,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+        author: a.author?.name || 'ASSBEP',
+        title_en: enTranslation?.title || '',
+        excerpt_en: enTranslation?.excerpt || '',
+        content_en: enTranslation?.content || '',
+        title_fr: frTranslation?.title || '',
+        excerpt_fr: frTranslation?.excerpt || '',
+        content_fr: frTranslation?.content || '',
+      };
     });
   }
 

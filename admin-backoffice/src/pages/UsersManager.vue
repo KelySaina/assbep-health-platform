@@ -101,23 +101,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { useToast } from 'vue-toastification'
 
+const toast = useToast()
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const showForm = ref(false)
 
-const users = ref([
-  { id: 1, name: 'Dr. Jean Kamga', email: 'jean@assbep.org', role: 'super_admin', permissions: ['manage_content', 'edit_translations', 'publish_articles', 'manage_users'] },
-  { id: 2, name: 'Marie Dupont', email: 'marie@assbep.org', role: 'editor', permissions: ['manage_content', 'publish_articles'] },
-  { id: 3, name: 'Paul Ngassa', email: 'paul@assbep.org', role: 'editor', permissions: ['manage_content', 'publish_articles'] },
-  { id: 4, name: 'Sylvie Mbarga', email: 'sylvie@assbep.org', role: 'translator', permissions: ['edit_translations'] },
-])
+const users = ref<any[]>([])
+
+const loadUsers = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}/users`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })
+    users.value = response.data
+  } catch (error) {
+    console.error('Error loading users:', error)
+    toast.error('Failed to load users')
+  }
+}
 
 const roleColor = (role: string) => {
   const colors: Record<string, string> = {
     super_admin: 'bg-red-100 text-red-700',
+    SUPER_ADMIN: 'bg-red-100 text-red-700',
     editor: 'bg-blue-100 text-blue-700',
+    EDITOR: 'bg-blue-100 text-blue-700',
     translator: 'bg-purple-100 text-purple-700',
+    TRANSLATOR: 'bg-purple-100 text-purple-700',
   }
   return colors[role] || 'bg-gray-100 text-gray-700'
 }
+
+onMounted(() => {
+  loadUsers()
+})
 </script>

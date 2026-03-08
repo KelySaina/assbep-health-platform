@@ -120,32 +120,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { useToast } from 'vue-toastification'
 
+const toast = useToast()
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const showForm = ref(false)
 const searchQuery = ref('')
 const filterGroup = ref('')
 const dirtyKeys = ref(new Set<string>())
 
-const phrases = ref([
-  { key: 'hero_title', group: 'hero', en: 'Your Health, Our Mission', fr: 'Votre Santé, Notre Mission' },
-  { key: 'hero_subtitle', group: 'hero', en: 'Improving Community Health Together', fr: 'Améliorer la Santé de la Population Ensemble' },
-  { key: 'cta_donate', group: 'cta', en: 'Support Our Mission', fr: 'Soutenez Notre Mission' },
-  { key: 'cta_volunteer', group: 'cta', en: 'Become a Volunteer', fr: 'Devenir Bénévole' },
-  { key: 'nav_home', group: 'nav', en: 'Home', fr: 'Accueil' },
-  { key: 'nav_about', group: 'nav', en: 'About', fr: 'À Propos' },
-  { key: 'nav_programs', group: 'nav', en: 'Programs', fr: 'Programmes' },
-  { key: 'nav_blog', group: 'nav', en: 'Blog', fr: 'Blog' },
-  { key: 'nav_contact', group: 'nav', en: 'Contact', fr: 'Contact' },
-  { key: 'footer_description', group: 'footer', en: 'ASSBEP is dedicated to improving community health...', fr: 'ASSBEP est dédié à l\'amélioration de la santé communautaire...' },
-  { key: 'programs_title', group: 'programs', en: 'Our Programs', fr: 'Nos Programmes' },
-  { key: 'blog_title', group: 'blog', en: 'Latest News', fr: 'Dernières Nouvelles' },
-  { key: 'contact_title', group: 'contact', en: 'Contact Us', fr: 'Contactez-nous' },
-])
+const phrases = ref<any[]>([])
+
+const loadPhrases = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}/phrases`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })
+    phrases.value = response.data
+  } catch (error) {
+    console.error('Error loading phrases:', error)
+    toast.error('Failed to load translations')
+  }
+}
 
 const filteredPhrases = computed(() => {
   return phrases.value.filter((p) => {
-    const matchesSearch = p.key.includes(searchQuery.value) || p.en.toLowerCase().includes(searchQuery.value.toLowerCase()) || p.fr.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesSearch = p.key?.includes(searchQuery.value) || p.en?.toLowerCase().includes(searchQuery.value.toLowerCase()) || p.fr?.toLowerCase().includes(searchQuery.value.toLowerCase())
     const matchesGroup = !filterGroup.value || p.group === filterGroup.value
     return matchesSearch && matchesGroup
   })
@@ -157,6 +161,9 @@ const markDirty = (key: string) => {
 
 const savPhrase = (key: string) => {
   dirtyKeys.value.delete(key)
-  // API call would go here
 }
+
+onMounted(() => {
+  loadPhrases()
+})
 </script>

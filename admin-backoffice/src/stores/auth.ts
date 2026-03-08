@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import axios from 'axios'
 
 export interface AdminUser {
   id: number
@@ -9,23 +10,41 @@ export interface AdminUser {
   avatar?: string
 }
 
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
+
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AdminUser | null>(null)
   const token = ref<string | null>(localStorage.getItem('admin_token'))
 
   const isAuthenticated = computed(() => !!token.value)
 
-  const login = async (email: string, _password: string) => {
-    // Mock login for development
-    await new Promise((r) => setTimeout(r, 1000))
-    token.value = 'mock-jwt-token-' + Date.now()
-    user.value = {
-      id: 1,
-      name: 'Admin User',
-      email,
-      role: 'super_admin',
+  const login = async (email: string, password: string) => {
+    try {
+      // Clear any old tokens first
+      localStorage.removeItem('admin_token')
+
+      const response = await axios.post(`${apiUrl}/auth/login`, {
+        email,
+        password,
+      })
+
+      console.log('Login response:', response.data)
+
+      token.value = response.data.access_token
+      user.value = {
+        id: response.data.user.id,
+        name: response.data.user.name,
+        email: response.data.user.email,
+        role: response.data.user.role.toLowerCase().replace('_', '_') as 'super_admin' | 'editor' | 'translator',
+      }
+      if (token.value) {
+        localStorage.setItem('admin_token', token.value)
+        console.log('Token saved:', token.value)
+      }
+    } catch (error) {
+      console.error('Login failed:', error)
+      throw error
     }
-    localStorage.setItem('admin_token', token.value)
   }
 
   const logout = () => {

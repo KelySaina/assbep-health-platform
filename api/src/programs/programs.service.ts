@@ -27,9 +27,32 @@ export class ProgramsService {
   }
 
   async findAllAdmin() {
-    return this.prisma.program.findMany({
+    const programs = await this.prisma.program.findMany({
       include: { translations: true },
       orderBy: { order: 'asc' },
+    });
+
+    // Flatten translations for admin UI
+    return programs.map(p => {
+      const enTranslation = p.translations.find(t => t.language === 'en');
+      const frTranslation = p.translations.find(t => t.language === 'fr');
+
+      return {
+        id: p.id,
+        slug: p.slug,
+        category: p.category,
+        image: p.image,
+        order: p.order,
+        published: p.published,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        title_en: enTranslation?.title || '',
+        description_en: enTranslation?.description || '',
+        content_en: enTranslation?.content || '',
+        title_fr: frTranslation?.title || '',
+        description_fr: frTranslation?.description || '',
+        content_fr: frTranslation?.content || '',
+      };
     });
   }
 

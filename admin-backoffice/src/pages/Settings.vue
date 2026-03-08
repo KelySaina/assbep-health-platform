@@ -2,7 +2,11 @@
   <div class="space-y-6">
     <div>
       <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.settings') }}</h2>
-      <p class="text-sm text-gray-500 mt-1">Configure website settings and contact information</p>
+      <p class="text-sm text-gray-500 mt-1">Configure website settings    await axios.post(`${apiUrl}/settings`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })contact information</p>
     </div>
 
     <div class="grid lg:grid-cols-2 gap-6">
@@ -25,7 +29,9 @@
               <option value="fr">French</option>
             </select>
           </div>
-          <button type="button" class="btn-primary">{{ $t('actions.save') }}</button>
+          <button type="button" class="btn-primary" @click="saveSettings('general')" :disabled="loading.general">
+            {{ loading.general ? 'Saving...' : $t('actions.save') }}
+          </button>
         </form>
       </div>
 
@@ -51,9 +57,15 @@
           </div>
           <div>
             <label class="label">Google Maps Embed URL</label>
-            <input type="text" class="input" v-model="settings.mapUrl" placeholder="https://maps.google.com/..." />
+            <input type="text" class="input" v-model="settings.mapUrl" placeholder="https://www.google.com/maps/embed?pb=..." />
+            <p class="text-xs text-gray-500 mt-1">
+              💡 To get the embed URL: Go to <a href="https://www.google.com/maps" target="_blank" class="text-primary hover:underline">Google Maps</a>,
+              search for your location, click <strong>Share</strong> → <strong>Embed a map</strong> → Copy the URL from the iframe src attribute.
+            </p>
           </div>
-          <button type="button" class="btn-primary">{{ $t('actions.save') }}</button>
+          <button type="button" class="btn-primary" @click="saveSettings('contact')" :disabled="loading.contact">
+            {{ loading.contact ? 'Saving...' : $t('actions.save') }}
+          </button>
         </form>
       </div>
 
@@ -73,7 +85,9 @@
             <label class="label">OG Image URL</label>
             <input type="text" class="input" v-model="settings.ogImage" />
           </div>
-          <button type="button" class="btn-primary">{{ $t('actions.save') }}</button>
+          <button type="button" class="btn-primary" @click="saveSettings('seo')" :disabled="loading.seo">
+            {{ loading.seo ? 'Saving...' : $t('actions.save') }}
+          </button>
         </form>
       </div>
 
@@ -97,7 +111,33 @@
             <label class="label">LinkedIn</label>
             <input type="url" class="input" v-model="settings.linkedin" placeholder="https://linkedin.com/..." />
           </div>
-          <button type="button" class="btn-primary">{{ $t('actions.save') }}</button>
+          <button type="button" class="btn-primary" @click="saveSettings('social')" :disabled="loading.social">
+            {{ loading.social ? 'Saving...' : $t('actions.save') }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Homepage Stats -->
+      <div class="card">
+        <h3 class="font-headline font-semibold text-lg mb-4">Homepage Statistics</h3>
+        <p class="text-sm text-gray-500 mb-4">These numbers appear on the homepage hero section</p>
+        <form class="space-y-4">
+          <div>
+            <label class="label">People Helped</label>
+            <input type="number" class="input" v-model.number="settings.peopleHelped" placeholder="25000" />
+            <p class="text-xs text-gray-500 mt-1">Total number of people helped by your programs</p>
+          </div>
+          <div>
+            <label class="label">Volunteers</label>
+            <input type="number" class="input" v-model.number="settings.volunteers" placeholder="350" />
+            <p class="text-xs text-gray-500 mt-1">Total number of active volunteers</p>
+          </div>
+          <div class="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+            <strong>Note:</strong> Programs and Partners counts are automatically calculated from your database.
+          </div>
+          <button type="button" class="btn-primary" @click="saveSettings('stats')" :disabled="loading.stats">
+            {{ loading.stats ? 'Saving...' : $t('actions.save') }}
+          </button>
         </form>
       </div>
     </div>
@@ -105,23 +145,125 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
+import axios from 'axios'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
 
 const settings = reactive({
-  siteName: 'ASSBEP Health Platform',
-  siteDescription: 'Improving Community Health Together — Améliorer la Santé de la Population Ensemble',
+  siteName: '',
+  siteDescription: '',
   defaultLanguage: 'en',
-  address: 'Yaoundé, Cameroon',
-  phone: '+237 6XX XXX XXX',
-  email: 'contact@assbep.org',
-  officeHours: 'Mon-Fri 8:00 AM - 5:00 PM',
+  address: '',
+  phone: '',
+  email: '',
+  officeHours: '',
   mapUrl: '',
-  metaTitle: 'ASSBEP - Improving Community Health Together',
-  metaDescription: 'ASSBEP Health Platform - Accessible healthcare services, education, and outreach programs for communities.',
+  metaTitle: '',
+  metaDescription: '',
   ogImage: '',
   facebook: '',
   twitter: '',
   instagram: '',
   linkedin: '',
+  peopleHelped: 0,
+  volunteers: 0,
+})
+
+const loading = reactive({
+  general: false,
+  contact: false,
+  seo: false,
+  social: false,
+  stats: false,
+})
+
+const loadSettings = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}/settings`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })
+    const data = response.data
+
+    // Map API response to settings
+    settings.siteName = data.site_name || ''
+    settings.siteDescription = data.site_description || ''
+    settings.address = data.contact_address || ''
+    settings.phone = data.contact_phone || ''
+    settings.email = data.contact_email || ''
+    settings.officeHours = data.office_hours || ''
+    settings.mapUrl = data.map_url || ''
+    settings.facebook = data.social_facebook || ''
+    settings.twitter = data.social_twitter || ''
+    settings.instagram = data.social_instagram || ''
+    settings.linkedin = data.social_linkedin || ''
+    settings.peopleHelped = parseInt(data.stat_people_helped) || 0
+    settings.volunteers = parseInt(data.stat_volunteers) || 0
+  } catch (error) {
+    console.error('Error loading settings:', error)
+    toast.error('Failed to load settings')
+  }
+}
+
+const saveSettings = async (section: 'general' | 'contact' | 'seo' | 'social' | 'stats') => {
+  loading[section] = true
+
+  try {
+    let data: Record<string, string> = {}
+
+    if (section === 'general') {
+      data = {
+        site_name: settings.siteName,
+        site_description: settings.siteDescription,
+      }
+    } else if (section === 'contact') {
+      data = {
+        contact_address: settings.address,
+        contact_phone: settings.phone,
+        contact_email: settings.email,
+        office_hours: settings.officeHours,
+        map_url: settings.mapUrl,
+      }
+    } else if (section === 'seo') {
+      data = {
+        meta_title: settings.metaTitle,
+        meta_description: settings.metaDescription,
+        og_image: settings.ogImage,
+      }
+    } else if (section === 'social') {
+      data = {
+        social_facebook: settings.facebook,
+        social_twitter: settings.twitter,
+        social_instagram: settings.instagram,
+        social_linkedin: settings.linkedin,
+      }
+    } else if (section === 'stats') {
+      data = {
+        stat_people_helped: settings.peopleHelped.toString(),
+        stat_volunteers: settings.volunteers.toString(),
+      }
+    }
+
+    await axios.post(`${apiUrl}/settings`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })
+
+    toast.success('Settings saved successfully!')
+  } catch (error) {
+    console.error('Error saving settings:', error)
+    toast.error('Failed to save settings')
+  } finally {
+    loading[section] = false
+  }
+}
+
+onMounted(() => {
+  loadSettings()
 })
 </script>

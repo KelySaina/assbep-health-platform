@@ -1,18 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Program, Article, Partner, Statistic } from '@/types'
-import { fetchPrograms, fetchArticles, fetchPartners } from '@/api'
+import type { Program, Article, Partner, Statistic, Resource } from '@/types'
+import { fetchPrograms, fetchArticles, fetchPartners, fetchResources } from '@/api'
+import axios from 'axios'
 
 export const useAppStore = defineStore('app', () => {
   const programs = ref<Program[]>([])
   const articles = ref<Article[]>([])
-  const stats = ref<Statistic[]>([
-    { id: 1, key: 'people_helped', value: 25000, label: 'People Helped', icon: 'users', order: 1 },
-    { id: 2, key: 'programs_launched', value: 48, label: 'Programs Launched', icon: 'clipboard', order: 2 },
-    { id: 3, key: 'volunteers', value: 350, label: 'Volunteers', icon: 'heart', order: 3 },
-    { id: 4, key: 'regions_covered', value: 12, label: 'Regions Covered', icon: 'map', order: 4 },
-  ])
+  const stats = ref<Statistic[]>([])
   const partners = ref<Partner[]>([])
+  const resources = ref<Resource[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -61,12 +58,73 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // Load resources from API
+  const loadResources = async (language?: string, type?: string) => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await fetchResources(language, type)
+      resources.value = response.data
+    } catch (err: any) {
+      error.value = err.message || 'Failed to load resources'
+      console.error('Error loading resources:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Load stats from API
+  const loadStats = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
+      console.log('Loading stats from:', `${apiUrl}/settings/stats`)
+      const response = await axios.get(`${apiUrl}/settings/stats`)
+      const data = response.data
+      console.log('Stats data received:', data)
+
+      // Map stats with proper labels and icons
+      const statConfig: Record<string, { label: string; icon: string }> = {
+        people_helped: { label: 'People Helped', icon: 'users' },
+        programs_launched: { label: 'Programs Launched', icon: 'clipboard' },
+        volunteers: { label: 'Volunteers', icon: 'heart' },
+        partners: { label: 'Partners', icon: 'map' },
+      }
+
+      const updatedStats: Statistic[] = []
+      let order = 1
+
+      for (const [key, value] of Object.entries(data)) {
+        const config = statConfig[key]
+        if (config && typeof value === 'number') {
+          updatedStats.push({
+            id: order,
+            key,
+            value,
+            label: config.label,
+            icon: config.icon,
+            order: order++,
+          })
+        }
+      }
+
+      console.log('Updated stats:', updatedStats)
+      if (updatedStats.length > 0) {
+        stats.value = updatedStats
+      }
+    } catch (err: any) {
+      console.error('Error loading stats:', err)
+      // Keep default stats if API fails
+    }
+  }
+
   // Initialize all data
   const initializeData = async () => {
     await Promise.all([
       loadPrograms(),
       loadArticles(),
-      loadPartners()
+      loadPartners(),
+      loadResources(),
+      loadStats(),
     ])
   }
 
@@ -78,11 +136,14 @@ export const useAppStore = defineStore('app', () => {
     articles,
     stats,
     partners,
+    resources,
     loading,
     error,
     loadPrograms,
     loadArticles,
     loadPartners,
+    loadResources,
+    loadStats,
     initializeData,
     featuredPrograms,
     latestArticles,

@@ -16,13 +16,23 @@ export class ResourcesService {
       },
       orderBy: { order: 'asc' },
     });
-    return resources.map((r) => ({
-      id: r.id,
-      type: r.type,
-      fileUrl: r.fileUrl,
-      title: r.translations[0]?.title || '',
-      description: r.translations[0]?.description || '',
-    }));
+
+    return resources.map((r) => {
+      const translation = r.translations[0];
+      // Map type to category (guides, videos, documents)
+      const category = r.type === 'guide' ? 'guides' : r.type === 'video' ? 'videos' : 'documents';
+
+      return {
+        id: r.id,
+        type: r.type,
+        category,
+        file: r.fileUrl,
+        fileUrl: r.fileUrl,
+        language: translation?.language || 'en',
+        title: translation?.title || '',
+        description: translation?.description || '',
+      };
+    });
   }
 
   async create(data: any) {

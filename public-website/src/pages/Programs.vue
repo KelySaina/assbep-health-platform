@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import ProgramCard from '@/components/ProgramCard.vue'
 
@@ -67,5 +67,9 @@ const categories = [
 const filteredPrograms = computed(() => {
   if (activeCategory.value === 'all') return store.programs
   return store.programs.filter((p) => p.category === activeCategory.value)
+})
+
+onMounted(() => {
+  store.loadPrograms()
 })
 </script>

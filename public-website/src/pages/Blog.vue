@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import BlogCard from '@/components/BlogCard.vue'
 
@@ -66,5 +66,9 @@ const categories = [
 const filteredArticles = computed(() => {
   if (activeCategory.value === 'all') return store.articles
   return store.articles.filter((a) => a.category === activeCategory.value)
+})
+
+onMounted(() => {
+  store.loadArticles()
 })
 </script>

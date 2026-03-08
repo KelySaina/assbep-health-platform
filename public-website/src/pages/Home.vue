@@ -119,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import Hero from '@/components/Hero.vue'
 import ProgramCard from '@/components/ProgramCard.vue'
@@ -127,4 +128,8 @@ import StatsSection from '@/components/StatsSection.vue'
 import PartnersSection from '@/components/PartnersSection.vue'
 
 const store = useAppStore()
+
+onMounted(() => {
+  store.initializeData()
+})
 </script>

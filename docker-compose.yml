@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  # ─── PostgreSQL Database ────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: assbep-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: assbep
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d assbep"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── NestJS API ─────────────────────────────────────────────
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: assbep-api
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/assbep?schema=public
+      JWT_SECRET: assbep-secret-key-change-in-production
+      PORT: "4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/api/programs || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Public Website (Vue 3) ────────────────────────────────
+  public-website:
+    build:
+      context: ./public-website
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:4000
+    container_name: assbep-public
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ─── Admin Backoffice (Vue 3) ──────────────────────────────
+  admin-backoffice:
+    build:
+      context: ./admin-backoffice
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:4000
+    container_name: assbep-admin
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local

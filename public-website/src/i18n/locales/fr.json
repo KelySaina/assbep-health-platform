@@ -1,0 +1,131 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "about": "À Propos",
+    "programs": "Programmes",
+    "blog": "Blog",
+    "resources": "Ressources",
+    "partners": "Partenaires",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Votre Santé, Notre Mission",
+    "subtitle": "Améliorer la Santé de la Population Ensemble — ASSBEP œuvre pour fournir des soins de santé accessibles, de l'éducation et des programmes de bien-être aux communautés dans le besoin.",
+    "cta": "Explorer les Programmes",
+    "cta_secondary": "Contactez-nous"
+  },
+  "mission": {
+    "title": "Notre Mission",
+    "description": "ASSBEP est dédié à l'amélioration de la santé et du bien-être des communautés grâce à des services de santé accessibles, à l'éducation et à des programmes de sensibilisation. Nous croyons que chaque personne mérite un soutien de santé de qualité, quelle que soit sa situation.",
+    "vision_title": "Notre Vision",
+    "vision_description": "Un monde où chaque communauté a accès à des soins de santé de qualité et à l'éducation sanitaire.",
+    "values_title": "Nos Valeurs",
+    "values_description": "La compassion, l'intégrité, l'accessibilité et l'autonomisation des communautés guident tout ce que nous faisons."
+  },
+  "programs": {
+    "title": "Nos Programmes",
+    "subtitle": "Découvrez les programmes de santé et les services que nous offrons aux communautés",
+    "view_all": "Voir Tous les Programmes",
+    "learn_more": "En Savoir Plus",
+    "categories": {
+      "all": "Tout",
+      "maternal": "Santé Maternelle",
+      "vaccination": "Vaccination",
+      "nutrition": "Nutrition",
+      "wellness": "Bien-être",
+      "outreach": "Sensibilisation"
+    }
+  },
+  "stats": {
+    "people_helped": "Personnes Aidées",
+    "programs_launched": "Programmes Lancés",
+    "volunteers": "Bénévoles",
+    "regions_covered": "Régions Couvertes"
+  },
+  "blog": {
+    "title": "Dernières Nouvelles",
+    "subtitle": "Restez informé avec nos derniers articles de santé, nouvelles communautaires et événements",
+    "read_more": "Lire la Suite",
+    "view_all": "Voir Tous les Articles",
+    "categories": {
+      "all": "Tout",
+      "health_tips": "Conseils Santé",
+      "community_news": "Nouvelles Communautaires",
+      "events": "Événements",
+      "reports": "Rapports"
+    },
+    "published_on": "Publié le",
+    "by": "par"
+  },
+  "resources": {
+    "title": "Ressources Santé",
+    "subtitle": "Accédez aux matériels éducatifs, guides et documents pour soutenir votre parcours de santé",
+    "download": "Télécharger",
+    "watch": "Regarder",
+    "categories": {
+      "guides": "Guides",
+      "videos": "Vidéos",
+      "documents": "Documents"
+    }
+  },
+  "partners": {
+    "title": "Nos Partenaires",
+    "subtitle": "Les organisations qui soutiennent notre mission pour une meilleure santé communautaire",
+    "become_partner": "Devenir Partenaire"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Prenez contact avec nous — nous serions ravis de vous entendre",
+    "form": {
+      "name": "Nom Complet",
+      "email": "Adresse Email",
+      "subject": "Sujet",
+      "message": "Message",
+      "send": "Envoyer le Message",
+      "sending": "Envoi en cours...",
+      "success": "Votre message a été envoyé avec succès !",
+      "error": "Une erreur s'est produite. Veuillez réessayer."
+    },
+    "info": {
+      "address": "Adresse",
+      "phone": "Téléphone",
+      "email": "Email",
+      "hours": "Heures d'ouverture"
+    }
+  },
+  "about": {
+    "title": "À Propos d'ASSBEP",
+    "subtitle": "Découvrez notre histoire, notre mission et l'équipe dédiée à l'amélioration de la santé communautaire",
+    "history_title": "Notre Histoire",
+    "history_description": "ASSBEP a été fondé avec la vision de créer une communauté plus saine grâce à des soins de santé accessibles et des programmes éducatifs. Au fil des ans, nous avons grandi pour servir des milliers de personnes dans plusieurs régions.",
+    "team_title": "Notre Équipe",
+    "team_subtitle": "Rencontrez les professionnels dévoués derrière ASSBEP"
+  },
+  "footer": {
+    "description": "ASSBEP est dédié à l'amélioration de la santé communautaire grâce à des services de santé accessibles, à l'éducation et à des programmes de sensibilisation.",
+    "quick_links": "Liens Rapides",
+    "contact_info": "Coordonnées",
+    "follow_us": "Suivez-nous",
+    "newsletter": "Bulletin d'Information",
+    "newsletter_placeholder": "Entrez votre email",
+    "subscribe": "S'abonner",
+    "rights": "Tous droits réservés.",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions d'Utilisation"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "back": "Retour",
+    "not_found": "Page Non Trouvée",
+    "not_found_message": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "go_home": "Aller à l'Accueil",
+    "support": "Soutenez Notre Mission"
+  },
+  "cta": {
+    "donate": "Soutenez Notre Mission",
+    "volunteer": "Devenir Bénévole",
+    "learn_more": "En Savoir Plus"
+  }
+}

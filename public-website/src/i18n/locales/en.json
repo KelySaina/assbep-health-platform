@@ -1,0 +1,131 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "programs": "Programs",
+    "blog": "Blog",
+    "resources": "Resources",
+    "partners": "Partners",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Your Health, Our Mission",
+    "subtitle": "Improving Community Health Together — ASSBEP works to provide accessible healthcare, education, and wellness programs to communities in need.",
+    "cta": "Explore Programs",
+    "cta_secondary": "Contact Us"
+  },
+  "mission": {
+    "title": "Our Mission",
+    "description": "ASSBEP is dedicated to improving the health and well-being of communities through accessible healthcare services, education, and outreach programs. We believe that every person deserves quality health support regardless of their circumstances.",
+    "vision_title": "Our Vision",
+    "vision_description": "A world where every community has access to quality healthcare and health education.",
+    "values_title": "Our Values",
+    "values_description": "Compassion, integrity, accessibility, and community empowerment guide everything we do."
+  },
+  "programs": {
+    "title": "Our Programs",
+    "subtitle": "Discover the health programs and services we offer to communities",
+    "view_all": "View All Programs",
+    "learn_more": "Learn More",
+    "categories": {
+      "all": "All",
+      "maternal": "Maternal Health",
+      "vaccination": "Vaccination",
+      "nutrition": "Nutrition",
+      "wellness": "Wellness",
+      "outreach": "Outreach"
+    }
+  },
+  "stats": {
+    "people_helped": "People Helped",
+    "programs_launched": "Programs Launched",
+    "volunteers": "Volunteers",
+    "regions_covered": "Regions Covered"
+  },
+  "blog": {
+    "title": "Latest News",
+    "subtitle": "Stay updated with our latest health articles, community news, and events",
+    "read_more": "Read More",
+    "view_all": "View All Articles",
+    "categories": {
+      "all": "All",
+      "health_tips": "Health Tips",
+      "community_news": "Community News",
+      "events": "Events",
+      "reports": "Reports"
+    },
+    "published_on": "Published on",
+    "by": "by"
+  },
+  "resources": {
+    "title": "Health Resources",
+    "subtitle": "Access educational materials, guides, and documents to support your health journey",
+    "download": "Download",
+    "watch": "Watch",
+    "categories": {
+      "guides": "Guides",
+      "videos": "Videos",
+      "documents": "Documents"
+    }
+  },
+  "partners": {
+    "title": "Our Partners",
+    "subtitle": "Organizations that support our mission for better community health",
+    "become_partner": "Become a Partner"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in touch with us — we'd love to hear from you",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send Message",
+      "sending": "Sending...",
+      "success": "Your message has been sent successfully!",
+      "error": "Something went wrong. Please try again."
+    },
+    "info": {
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "hours": "Office Hours"
+    }
+  },
+  "about": {
+    "title": "About ASSBEP",
+    "subtitle": "Learn about our history, mission, and the team dedicated to improving community health",
+    "history_title": "Our History",
+    "history_description": "ASSBEP was founded with the vision of creating a healthier community through accessible healthcare and education programs. Over the years, we have grown to serve thousands of individuals across multiple regions.",
+    "team_title": "Our Team",
+    "team_subtitle": "Meet the dedicated professionals behind ASSBEP"
+  },
+  "footer": {
+    "description": "ASSBEP is dedicated to improving community health through accessible healthcare services, education, and outreach programs.",
+    "quick_links": "Quick Links",
+    "contact_info": "Contact Info",
+    "follow_us": "Follow Us",
+    "newsletter": "Newsletter",
+    "newsletter_placeholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try Again",
+    "back": "Go Back",
+    "not_found": "Page Not Found",
+    "not_found_message": "The page you're looking for doesn't exist or has been moved.",
+    "go_home": "Go to Homepage",
+    "support": "Support Our Mission"
+  },
+  "cta": {
+    "donate": "Support Our Mission",
+    "volunteer": "Become a Volunteer",
+    "learn_more": "Learn More"
+  }
+}

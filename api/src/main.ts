@@ -12,17 +12,25 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // CORS configuration from environment variables
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://public-website',
+        'http://admin-backoffice',
+      ];
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://public-website',
-      'http://admin-backoffice',
-    ],
+    origin: corsOrigins,
     credentials: true,
   });
 
-  await app.listen(4000);
-  console.log('🚀 ASSBEP API running on http://localhost:4000');
+  const port = parseInt(process.env.PORT || '4000');
+  await app.listen(port);
+  console.log(`🚀 ASSBEP API running on http://localhost:${port}`);
+  console.log(`✅ CORS enabled for: ${corsOrigins.join(', ')}`);
 }
 bootstrap();

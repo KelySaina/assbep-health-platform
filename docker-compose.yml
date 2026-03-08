@@ -59,6 +59,7 @@ services:
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: assbep-media
       MINIO_USE_SSL: "false"
+      MINIO_PUBLIC_URL: http://localhost:9000
     depends_on:
       postgres:
         condition: service_healthy

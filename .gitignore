@@ -10,8 +10,19 @@ build/
 # Environment files
 .env
 .env.local
+.env.production
+.env.development
+.env.test
 .env.*.local
 **/.env
+**/.env.local
+**/.env.production
+**/.env.development
+**/.env.test
+!.env.example
+!.env.production.example
+!**/.env.example
+!**/.env.production.example
 
 # OS files
 .DS_Store

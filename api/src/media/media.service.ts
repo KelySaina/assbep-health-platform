@@ -6,6 +6,7 @@ import * as Minio from 'minio';
 export class MediaService implements OnModuleInit {
   private minioClient: Minio.Client;
   private bucketName: string;
+  private publicUrl: string;
 
   constructor(private prisma: PrismaService) {
     const endpoint = process.env.MINIO_ENDPOINT || 'localhost';
@@ -14,6 +15,9 @@ export class MediaService implements OnModuleInit {
     const accessKey = process.env.MINIO_ACCESS_KEY || 'minioadmin';
     const secretKey = process.env.MINIO_SECRET_KEY || 'minioadmin';
     this.bucketName = process.env.MINIO_BUCKET || 'assbep-media';
+
+    // Public URL for generating file URLs (supports CDN, proxy, or direct MinIO)
+    this.publicUrl = process.env.MINIO_PUBLIC_URL || `http://${endpoint}:${port}`;
 
     this.minioClient = new Minio.Client({
       endPoint: endpoint,
@@ -68,7 +72,7 @@ export class MediaService implements OnModuleInit {
         metaData,
       );
 
-      const url = `http://localhost:9000/${this.bucketName}/${fileName}`;
+      const url = `${this.publicUrl}/${this.bucketName}/${fileName}`;
 
       // Determine type from mimetype if not provided
       let mediaType = type;

@@ -10,7 +10,7 @@ on:
 jobs:
   deploy:
     name: Deploy Stack to EC2
-    runs-on: self-hosted
+    runs-on: assbep-runner
 
     steps:
       - name: Checkout code

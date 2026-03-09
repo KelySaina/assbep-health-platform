@@ -11,7 +11,6 @@ A full-stack multilingual (EN/FR) health platform built for ASSBEP, featuring a 
 - [Environment Variables](#-environment-variables)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
-- [Production Deployment](#-production-deployment)
 - [API Documentation](#-api-documentation)
 - [Development](#-development)
 
@@ -68,8 +67,6 @@ docker compose down
 
 ## 🔐 Environment Variables
 
-### Development Setup
-
 For local development, the default values work out of the box. To customize:
 
 ```bash
@@ -81,18 +78,6 @@ cp public-website/.env.example public-website/.env
 
 # Edit as needed
 nano .env
-```
-
-### Production Setup
-
-```bash
-# Copy production templates
-cp .env.production.example .env.production
-cp admin-backoffice/.env.production.example admin-backoffice/.env.production
-cp public-website/.env.production.example public-website/.env.production
-
-# ⚠️ CRITICAL: Update all secrets and domains
-nano .env.production
 ```
 
 ### Key Environment Variables
@@ -209,182 +194,6 @@ openssl rand -base64 64
 - **Containerization:** Docker + Docker Compose
 - **Web Server:** Nginx (for static files)
 - **Reverse Proxy:** Nginx/Traefik ready
-
----
-
-## 🌐 Production Deployment
-
-### Pre-Deployment Checklist
-
-- [ ] Domain name configured
-- [ ] SSL certificates ready
-- [ ] Server with Docker installed
-- [ ] Reverse proxy configured (Nginx/Traefik)
-- [ ] Backup strategy in place
-- [ ] Environment variables set
-
-### Deployment Steps
-
-#### 1. Prepare Environment
-
-```bash
-# On your server
-git clone https://github.com/KelySaina/assbep-health-platform.git
-cd assbep-health-platform
-
-# Setup production environment
-cp .env.production.example .env.production
-nano .env.production
-```
-
-#### 2. Update Critical Variables
-
-**⚠️ MUST CHANGE:**
-- All passwords (PostgreSQL, MinIO, JWT)
-- `MINIO_PUBLIC_URL` → Your CDN/domain
-- `CORS_ORIGIN` → Your actual domains
-- `VITE_API_URL` → Production API URL
-- SSL settings (`MINIO_USE_SSL=true`)
-
-#### 3. Deploy with Docker
-
-```bash
-# Build and start
-docker compose -f docker-compose.production.yml --env-file .env.production up -d --build
-
-# Check status
-docker compose -f docker-compose.production.yml ps
-
-# View logs
-docker compose -f docker-compose.production.yml logs -f
-```
-
-#### 4. Run Database Migrations
-
-```bash
-# Apply migrations
-docker compose -f docker-compose.production.yml exec api npx prisma migrate deploy
-
-# Seed initial data (optional)
-docker compose -f docker-compose.production.yml exec api npx prisma db seed
-```
-
-### Domain Configuration
-
-**Recommended Setup:**
-```
-yourdomain.com           → Public Website (3000)
-admin.yourdomain.com     → Admin Backoffice (3001)
-api.yourdomain.com       → API (4000)
-minio.yourdomain.com     → MinIO (9000)
-console.yourdomain.com   → MinIO Console (9001)
-```
-
-### Nginx Reverse Proxy Example
-
-```nginx
-# API
-server {
-    listen 443 ssl http2;
-    server_name api.yourdomain.com;
-    
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
-    location / {
-        proxy_pass http://localhost:4000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-# Public Website
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com www.yourdomain.com;
-    
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-    }
-}
-
-# Admin Backoffice
-server {
-    listen 443 ssl http2;
-    server_name admin.yourdomain.com;
-    
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-    }
-}
-
-# MinIO (Files)
-server {
-    listen 443 ssl http2;
-    server_name minio.yourdomain.com;
-    
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
-    client_max_body_size 100M;
-    
-    location / {
-        proxy_pass http://localhost:9000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### SSL with Let's Encrypt
-
-```bash
-# Install Certbot
-sudo apt install certbot python3-certbot-nginx
-
-# Get certificates
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
-sudo certbot --nginx -d api.yourdomain.com
-sudo certbot --nginx -d admin.yourdomain.com
-sudo certbot --nginx -d minio.yourdomain.com
-
-# Auto-renewal
-sudo certbot renew --dry-run
-```
-
-### Database Backup
-
-```bash
-# Manual backup
-docker compose -f docker-compose.production.yml exec postgres \
-  pg_dump -U your_user your_db > backup_$(date +%Y%m%d).sql
-
-# Restore
-docker compose -f docker-compose.production.yml exec -T postgres \
-  psql -U your_user your_db < backup.sql
-```
 
 ---
 
@@ -592,25 +401,10 @@ npm run lint                      # Run linter
 
 ## 🔒 Security
 
-### Production Security Checklist
-
-- [ ] Change all default passwords
-- [ ] Generate strong JWT_SECRET
-- [ ] Enable HTTPS/SSL everywhere
-- [ ] Update CORS to specific domains
-- [ ] Set up firewall rules
-- [ ] Enable rate limiting
-- [ ] Regular security updates
-- [ ] Database backups configured
-- [ ] MinIO access restricted
-- [ ] Environment variables secured
-- [ ] API authentication enforced
-
 ### File Upload Security
 
 - File type validation (MIME type + extension)
 - File size limits (configurable via env)
-- Virus scanning recommended for production
 - Public read-only access for media bucket
 
 ---

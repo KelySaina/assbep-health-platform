@@ -8,6 +8,7 @@ A full-stack multilingual (EN/FR) health platform built for ASSBEP, featuring a 
 
 - [Architecture](#-architecture)
 - [Quick Start](#-quick-start)
+- [Production Deployment](#-production-deployment)
 - [Environment Variables](#-environment-variables)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
@@ -65,7 +66,88 @@ docker compose down
 
 ---
 
-## 🔐 Environment Variables
+## � Production Deployment
+
+### EC2 Self-Hosted Runner Setup
+
+This project uses **GitHub Actions** with a **self-hosted runner** on EC2 for automatic deployment.
+
+#### Prerequisites
+- EC2 instance (Ubuntu 20.04+ recommended)
+- Docker installed on EC2
+- GitHub repository access
+
+#### Quick Setup
+
+**1. On your EC2 instance:**
+
+```bash
+# Upload and run the setup script
+curl -o setup-runner.sh https://raw.githubusercontent.com/YOUR_USERNAME/assbep-health-platform/main/.github/setup-runner.sh
+chmod +x setup-runner.sh
+./setup-runner.sh
+```
+
+**2. Configure GitHub Runner:**
+
+- Go to your repository **Settings** → **Actions** → **Runners** → **New self-hosted runner**
+- Run the configuration command provided by GitHub on your EC2
+- Install as a service:
+  ```bash
+  sudo ./svc.sh install
+  sudo ./svc.sh start
+  ```
+
+**3. Add GitHub Secrets:**
+
+Go to **Settings** → **Secrets and variables** → **Actions** and add:
+
+| Secret | Description |
+|--------|-------------|
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `JWT_SECRET` | JWT secret key |
+| `MINIO_ROOT_USER` | MinIO admin username |
+| `MINIO_ROOT_PASSWORD` | MinIO admin password |
+| `EC2_PUBLIC_IP` | Your EC2 public IP |
+
+**4. Configure EC2 Security Group:**
+
+Allow inbound traffic on ports: **22** (SSH), **3000** (Website), **3001** (Admin), **4000** (API), **9000** (MinIO API), **9001** (MinIO Console)
+
+**5. Deploy:**
+
+Push to `main` branch or manually trigger the workflow from **Actions** tab.
+
+📖 **[Full Setup Guide](.github/RUNNER_SETUP.md)**
+
+#### Manual Deployment on EC2
+
+If you prefer manual deployment without CI/CD:
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/assbep-health-platform.git
+cd assbep-health-platform
+
+# Create production environment file
+cp .env.production.example .env
+nano .env  # Edit with your values
+
+# Deploy
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+# View logs
+docker compose logs -f
+
+# Access your services
+# Public: http://YOUR_EC2_IP:3000
+# Admin:  http://YOUR_EC2_IP:3001
+# API:    http://YOUR_EC2_IP:4000
+```
+
+---
+
+## �🔐 Environment Variables
 
 For local development, the default values work out of the box. To customize:
 

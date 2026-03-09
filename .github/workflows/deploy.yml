@@ -1,0 +1,74 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Stack to EC2
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          # Database
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=assbep
+          DATABASE_URL=postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@postgres:5432/assbep?schema=public
+
+          # JWT
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+
+          # MinIO
+          MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}
+          MINIO_ENDPOINT=minio
+          MINIO_PORT=9000
+          MINIO_ACCESS_KEY=${{ secrets.MINIO_ROOT_USER }}
+          MINIO_SECRET_KEY=${{ secrets.MINIO_ROOT_PASSWORD }}
+          MINIO_BUCKET=assbep-media
+          MINIO_USE_SSL=false
+          MINIO_PUBLIC_URL=http://${{ secrets.EC2_PUBLIC_IP }}:9000
+
+          # API
+          PORT=4000
+          VITE_API_URL=http://${{ secrets.EC2_PUBLIC_IP }}:4000/api
+          EOF
+
+      - name: Stop existing containers
+        run: docker compose down || true
+
+      - name: Pull latest images
+        run: docker compose pull || true
+
+      - name: Build and start services
+        run: docker compose up -d --build
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to be healthy..."
+          timeout 120s bash -c 'until docker compose ps | grep -q "healthy"; do sleep 5; done' || true
+
+      - name: Show running containers
+        run: docker compose ps
+
+      - name: Clean up old images
+        run: docker image prune -f
+
+      - name: Deployment success
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "Services:"
+          echo "  - Public Website: http://${{ secrets.EC2_PUBLIC_IP }}:3000"
+          echo "  - Admin Backoffice: http://${{ secrets.EC2_PUBLIC_IP }}:3001"
+          echo "  - API: http://${{ secrets.EC2_PUBLIC_IP }}:4000"
+          echo "  - MinIO Console: http://${{ secrets.EC2_PUBLIC_IP }}:9001"

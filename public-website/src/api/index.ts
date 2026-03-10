@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { Program, Article, Resource, Partner, HomepageData, ContactRequest, ContactInfo } from '@/types'
+import type { ContactRequest } from '@/types'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -10,28 +10,28 @@ const api = axios.create({
 
 // Public API
 export const fetchHomepage = () =>
-  api.get<HomepageData>('/homepage')
+  api.get('/homepage')
 
 export const fetchPrograms = (language?: string) =>
-  api.get<Program[]>('/programs', { params: { language } })
+  api.get('/programs', { params: { language } })
 
 export const fetchProgram = (slug: string) =>
-  api.get<Program>(`/programs/${slug}`)
+  api.get(`/programs/${slug}`)
 
 export const fetchArticles = (language?: string, category?: string) =>
-  api.get<Article[]>('/articles', { params: { language, category } })
+  api.get('/articles', { params: { language, category } })
 
 export const fetchArticle = (slug: string) =>
-  api.get<Article>(`/articles/${slug}`)
+  api.get(`/articles/${slug}`)
 
 export const fetchResources = (language?: string, type?: string) =>
-  api.get<Resource[]>('/resources', { params: { language, type } })
+  api.get('/resources', { params: { language, type } })
 
 export const fetchPartners = () =>
-  api.get<Partner[]>('/partners')
+  api.get('/partners')
 
 export const fetchContactInfo = () =>
-  api.get<ContactInfo>('/contact-info')
+  api.get('/contact-info')
 
 export const submitContactForm = (data: ContactRequest) =>
   api.post('/contact', data)

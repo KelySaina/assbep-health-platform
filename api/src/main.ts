@@ -2,6 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildOriginMatcher(patterns: string[]) {
+  const regexes = patterns.map((pattern) => {
+    const normalizedPattern = pattern.trim();
+    const regexPattern = `^${escapeRegex(normalizedPattern).replace(/\\\*/g, '.*')}$`;
+    return new RegExp(regexPattern);
+  });
+
+  return (origin: string) => regexes.some((regex) => regex.test(origin));
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -14,7 +28,7 @@ async function bootstrap() {
   );
 
   // CORS configuration from environment variables
-  const corsOrigins = process.env.CORS_ORIGIN
+  const corsOriginPatterns = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
     : [
         'http://localhost:3000',
@@ -23,14 +37,23 @@ async function bootstrap() {
         'http://admin-backoffice',
       ];
 
+  const isAllowedOrigin = buildOriginMatcher(corsOriginPatterns);
+
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      if (!origin || isAllowedOrigin(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+    },
     credentials: true,
   });
 
   const port = parseInt(process.env.PORT || '4000');
   await app.listen(port);
   console.log(`🚀 ASSBEP API running on http://localhost:${port}`);
-  console.log(`✅ CORS enabled for: ${corsOrigins.join(', ')}`);
+  console.log(`✅ CORS enabled for: ${corsOriginPatterns.join(', ')}`);
 }
 bootstrap();

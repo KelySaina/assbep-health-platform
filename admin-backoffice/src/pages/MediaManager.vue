@@ -194,7 +194,7 @@
           </svg>
           <p v-if="!selectedFile" class="text-sm text-gray-500 mb-2">Drag and drop files here, or</p>
           <p v-else class="text-sm text-gray-700 mb-2 font-medium">📄 {{ selectedFile.name }}</p>
-          <button type="button" @click="$refs.fileInput.click()" class="btn-secondary">
+          <button type="button" @click="openFilePicker" class="btn-secondary">
             {{ selectedFile ? 'Change File' : 'Browse Files' }}
           </button>
           <p class="text-xs text-gray-400 mt-3">Supports: JPG, PNG, SVG, PDF, MP4 (max 10MB)</p>
@@ -308,6 +308,10 @@ const handleFileSelect = (event: Event) => {
     // Auto-detect file type
     uploadForm.value.type = detectFileType(target.files[0])
   }
+}
+
+const openFilePicker = () => {
+  fileInput.value?.click()
 }
 
 const handleUpload = async () => {

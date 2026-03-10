@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div v-for="stat in dashboardStats" :key="stat.label" class="card">
+      <div v-for="stat in dashboardStats" :key="stat.key" class="card">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-500">{{ $t(`dashboard.${stat.key}`) }}</p>

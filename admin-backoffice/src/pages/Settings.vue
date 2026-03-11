@@ -2,11 +2,7 @@
   <div class="space-y-6">
     <div>
       <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.settings') }}</h2>
-      <p class="text-sm text-gray-500 mt-1">Configure website settings    await axios.post(`${apiUrl}/settings`, data, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
-      }
-    })contact information</p>
+      <p class="text-sm text-gray-500 mt-1">Configure website settings, contact information, SEO, social links, and homepage statistics.</p>
     </div>
 
     <div class="grid lg:grid-cols-2 gap-6">
@@ -192,11 +188,15 @@ const loadSettings = async () => {
     // Map API response to settings
     settings.siteName = data.site_name || ''
     settings.siteDescription = data.site_description || ''
+    settings.defaultLanguage = data.default_language || 'en'
     settings.address = data.contact_address || ''
     settings.phone = data.contact_phone || ''
     settings.email = data.contact_email || ''
     settings.officeHours = data.office_hours || ''
     settings.mapUrl = data.map_url || ''
+    settings.metaTitle = data.meta_title || ''
+    settings.metaDescription = data.meta_description || ''
+    settings.ogImage = data.og_image || ''
     settings.facebook = data.social_facebook || ''
     settings.twitter = data.social_twitter || ''
     settings.instagram = data.social_instagram || ''
@@ -219,6 +219,7 @@ const saveSettings = async (section: 'general' | 'contact' | 'seo' | 'social' | 
       data = {
         site_name: settings.siteName,
         site_description: settings.siteDescription,
+        default_language: settings.defaultLanguage,
       }
     } else if (section === 'contact') {
       data = {

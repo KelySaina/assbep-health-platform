@@ -447,8 +447,16 @@ const updateProfile = async () => {
       headers: { Authorization: `Bearer ${token}` }
     })
 
-    // Update auth store
-    authStore.user = { ...authStore.user, ...profileData }
+    authStore.updateProfile({
+      name: profileData.name,
+      email: profileData.email,
+      profilePicture: profileData.profilePicture,
+      position: profileData.position,
+      bio: profileData.bio,
+      showInTeam: profileData.showInTeam,
+      linkedin: profileData.linkedin,
+      twitter: profileData.twitter
+    })
 
     toast.success('Profile updated successfully!')
   } catch (error: any) {

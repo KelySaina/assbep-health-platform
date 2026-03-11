@@ -3,14 +3,24 @@ import { ref, computed } from 'vue'
 import axios from 'axios'
 
 export interface AdminUser {
-  id: number
+  id: string
   name: string
   email: string
   role: 'super_admin' | 'editor' | 'translator'
   avatar?: string
+  profilePicture?: string
+  position?: string
+  bio?: string
+  showInTeam?: boolean
+  linkedin?: string
+  twitter?: string
 }
 
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
+
+const normalizeRole = (role: string): AdminUser['role'] => {
+  return role.toLowerCase() as AdminUser['role']
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<AdminUser | null>(null)
@@ -35,7 +45,9 @@ export const useAuthStore = defineStore('auth', () => {
         id: response.data.user.id,
         name: response.data.user.name,
         email: response.data.user.email,
-        role: response.data.user.role.toLowerCase().replace('_', '_') as 'super_admin' | 'editor' | 'translator',
+        role: normalizeRole(response.data.user.role),
+        profilePicture: response.data.user.profilePicture,
+        position: response.data.user.position,
       }
       if (token.value) {
         localStorage.setItem('admin_token', token.value)
@@ -53,6 +65,15 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('admin_token')
   }
 
+  const updateProfile = (profile: Partial<Omit<AdminUser, 'id' | 'role'>>) => {
+    if (!user.value) return
+
+    user.value = {
+      ...user.value,
+      ...profile,
+    }
+  }
+
   const hasPermission = (permission: string) => {
     if (!user.value) return false
     const permissions: Record<string, string[]> = {
@@ -63,5 +84,5 @@ export const useAuthStore = defineStore('auth', () => {
     return permissions[user.value.role]?.includes(permission) ?? false
   }
 
-  return { user, token, isAuthenticated, login, logout, hasPermission }
+  return { user, token, isAuthenticated, login, logout, updateProfile, hasPermission }
 })

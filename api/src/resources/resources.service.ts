@@ -35,6 +35,32 @@ export class ResourcesService {
     });
   }
 
+  async findAllAdmin() {
+    const resources = await this.prisma.resource.findMany({
+      include: { translations: true },
+      orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
+    });
+
+    return resources.map((resource) => {
+      const enTranslation = resource.translations.find((translation) => translation.language === 'en');
+      const frTranslation = resource.translations.find((translation) => translation.language === 'fr');
+
+      return {
+        id: resource.id,
+        type: resource.type,
+        fileUrl: resource.fileUrl,
+        published: resource.published,
+        order: resource.order,
+        createdAt: resource.createdAt,
+        updatedAt: resource.updatedAt,
+        title_en: enTranslation?.title || '',
+        description_en: enTranslation?.description || '',
+        title_fr: frTranslation?.title || '',
+        description_fr: frTranslation?.description || '',
+      };
+    });
+  }
+
   async create(data: any) {
     return this.prisma.resource.create({
       data: {
@@ -49,9 +75,38 @@ export class ResourcesService {
   }
 
   async update(id: string, data: any) {
+    const translations = Array.isArray(data.translations) ? data.translations : [];
+
     return this.prisma.resource.update({
       where: { id },
-      data: { type: data.type, fileUrl: data.fileUrl, published: data.published, order: data.order },
+      data: {
+        type: data.type,
+        fileUrl: data.fileUrl,
+        published: data.published,
+        order: data.order,
+        translations: translations.length
+          ? {
+              upsert: translations.map((translation: { language: string; title: string; description: string }) => ({
+                where: {
+                  resourceId_language: {
+                    resourceId: id,
+                    language: translation.language,
+                  },
+                },
+                update: {
+                  title: translation.title,
+                  description: translation.description,
+                },
+                create: {
+                  language: translation.language,
+                  title: translation.title,
+                  description: translation.description,
+                },
+              })),
+            }
+          : undefined,
+      },
+      include: { translations: true },
     });
   }
 

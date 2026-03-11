@@ -13,34 +13,16 @@
       <div class="container-narrow">
         <div class="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 class="section-title">{{ $t('about.history_title') }}</h2>
-            <p class="text-neutral mt-4 leading-relaxed">{{ $t('about.history_description') }}</p>
+            <h2 class="section-title">{{ historyContent.title }}</h2>
+            <p class="text-neutral mt-4 leading-relaxed">{{ historyContent.description }}</p>
             <div class="mt-8 space-y-4">
-              <div class="flex items-center space-x-4">
+              <div v-for="item in historyContent.items" :key="item.number" class="flex items-center space-x-4">
                 <div class="w-12 h-12 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span class="text-primary font-bold">01</span>
+                  <span class="text-primary font-bold">{{ item.number }}</span>
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900">Founded with Purpose</h4>
-                  <p class="text-sm text-neutral">Started with a vision to improve community health access.</p>
-                </div>
-              </div>
-              <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span class="text-primary font-bold">02</span>
-                </div>
-                <div>
-                  <h4 class="font-semibold text-gray-900">Growing Impact</h4>
-                  <p class="text-sm text-neutral">Expanded programs across multiple regions and communities.</p>
-                </div>
-              </div>
-              <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
-                  <span class="text-primary font-bold">03</span>
-                </div>
-                <div>
-                  <h4 class="font-semibold text-gray-900">Building Community</h4>
-                  <p class="text-sm text-neutral">Over 25,000 people helped through our health programs.</p>
+                  <h4 class="font-semibold text-gray-900">{{ item.title }}</h4>
+                  <p class="text-sm text-neutral">{{ item.description }}</p>
                 </div>
               </div>
             </div>
@@ -97,5 +79,76 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, reactive } from 'vue'
+import axios from 'axios'
 import TeamSection from '@/components/TeamSection.vue'
+
+const apiUrl = import.meta.env.VITE_API_URL || '/api'
+
+const historyContent = reactive({
+  title: 'Our History',
+  description: 'ASSBEP was founded with the vision of creating a healthier community through accessible healthcare and education programs. Over the years, we have grown to serve thousands of individuals across multiple regions.',
+  items: [
+    {
+      number: '01',
+      title: 'Founded with Purpose',
+      description: 'Started with a vision to improve community health access.',
+    },
+    {
+      number: '02',
+      title: 'Growing Impact',
+      description: 'Expanded programs across multiple regions and communities.',
+    },
+    {
+      number: '03',
+      title: 'Building Community',
+      description: 'Over 25,000 people helped through our health programs.',
+    },
+  ],
+})
+
+const loadHistoryContent = async () => {
+  try {
+    const response = await axios.get(`${apiUrl}/settings`)
+    const settings = response.data
+
+    if (settings.about_history_title) {
+      historyContent.title = settings.about_history_title
+    }
+
+    if (settings.about_history_description) {
+      historyContent.description = settings.about_history_description
+    }
+
+    if (settings.about_history_item_1_title) {
+      historyContent.items[0].title = settings.about_history_item_1_title
+    }
+
+    if (settings.about_history_item_1_description) {
+      historyContent.items[0].description = settings.about_history_item_1_description
+    }
+
+    if (settings.about_history_item_2_title) {
+      historyContent.items[1].title = settings.about_history_item_2_title
+    }
+
+    if (settings.about_history_item_2_description) {
+      historyContent.items[1].description = settings.about_history_item_2_description
+    }
+
+    if (settings.about_history_item_3_title) {
+      historyContent.items[2].title = settings.about_history_item_3_title
+    }
+
+    if (settings.about_history_item_3_description) {
+      historyContent.items[2].description = settings.about_history_item_3_description
+    }
+  } catch (error) {
+    console.error('Error loading about history:', error)
+  }
+}
+
+onMounted(() => {
+  loadHistoryContent()
+})
 </script>

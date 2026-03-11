@@ -39,6 +39,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/MediaManager.vue'),
       },
       {
+        path: 'resources',
+        name: 'ResourcesManager',
+        component: () => import('@/pages/ResourcesManager.vue'),
+      },
+      {
         path: 'partners',
         name: 'PartnersManager',
         component: () => import('@/pages/PartnersManager.vue'),

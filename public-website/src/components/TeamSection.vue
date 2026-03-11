@@ -1,6 +1,6 @@
 <template>
   <section id="team" class="section pt-8 md:pt-10">
-    <div class="container">
+    <div class="container-narrow">
       <div class="relative overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-slate-50 via-white to-primary-light/40 px-6 py-8 shadow-soft md:px-10 md:py-10">
         <div class="absolute -right-10 top-0 h-32 w-32 rounded-full bg-primary/10 blur-2xl"></div>
         <div class="absolute bottom-0 left-0 h-24 w-24 rounded-full bg-primary-light/60 blur-2xl"></div>

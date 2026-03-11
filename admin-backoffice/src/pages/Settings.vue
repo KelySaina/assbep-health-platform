@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div>
       <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.settings') }}</h2>
-      <p class="text-sm text-gray-500 mt-1">Configure website settings, contact information, SEO, social links, and homepage statistics.</p>
+      <p class="text-sm text-gray-500 mt-1">Configure website settings, contact information, About page content, SEO, social links, and homepage statistics.</p>
     </div>
 
     <div class="grid lg:grid-cols-2 gap-6">
@@ -113,6 +113,66 @@
         </form>
       </div>
 
+      <!-- About Page History -->
+      <div class="card lg:col-span-2">
+        <h3 class="font-headline font-semibold text-lg mb-4">About Page History</h3>
+        <p class="text-sm text-gray-500 mb-4">Edit the history block shown on the public About page.</p>
+        <form class="space-y-5">
+          <div class="grid lg:grid-cols-2 gap-4">
+            <div>
+              <label class="label">History Title</label>
+              <input type="text" class="input" v-model="settings.aboutHistoryTitle" />
+            </div>
+            <div>
+              <label class="label">History Description</label>
+              <textarea class="input" rows="3" v-model="settings.aboutHistoryDescription"></textarea>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-3 gap-4">
+            <div class="rounded-2xl border border-gray-200 p-4 space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Step 01</p>
+              <div>
+                <label class="label">Title</label>
+                <input type="text" class="input" v-model="settings.aboutHistoryItem1Title" />
+              </div>
+              <div>
+                <label class="label">Description</label>
+                <textarea class="input" rows="3" v-model="settings.aboutHistoryItem1Description"></textarea>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 p-4 space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Step 02</p>
+              <div>
+                <label class="label">Title</label>
+                <input type="text" class="input" v-model="settings.aboutHistoryItem2Title" />
+              </div>
+              <div>
+                <label class="label">Description</label>
+                <textarea class="input" rows="3" v-model="settings.aboutHistoryItem2Description"></textarea>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-gray-200 p-4 space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Step 03</p>
+              <div>
+                <label class="label">Title</label>
+                <input type="text" class="input" v-model="settings.aboutHistoryItem3Title" />
+              </div>
+              <div>
+                <label class="label">Description</label>
+                <textarea class="input" rows="3" v-model="settings.aboutHistoryItem3Description"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary" @click="saveSettings('about')" :disabled="loading.about">
+            {{ loading.about ? 'Saving...' : $t('actions.save') }}
+          </button>
+        </form>
+      </div>
+
       <!-- Homepage Stats -->
       <div class="card">
         <h3 class="font-headline font-semibold text-lg mb-4">Homepage Statistics</h3>
@@ -164,6 +224,14 @@ const settings = reactive({
   twitter: '',
   instagram: '',
   linkedin: '',
+  aboutHistoryTitle: '',
+  aboutHistoryDescription: '',
+  aboutHistoryItem1Title: '',
+  aboutHistoryItem1Description: '',
+  aboutHistoryItem2Title: '',
+  aboutHistoryItem2Description: '',
+  aboutHistoryItem3Title: '',
+  aboutHistoryItem3Description: '',
   peopleHelped: 0,
   volunteers: 0,
 })
@@ -173,6 +241,7 @@ const loading = reactive({
   contact: false,
   seo: false,
   social: false,
+  about: false,
   stats: false,
 })
 
@@ -201,6 +270,14 @@ const loadSettings = async () => {
     settings.twitter = data.social_twitter || ''
     settings.instagram = data.social_instagram || ''
     settings.linkedin = data.social_linkedin || ''
+    settings.aboutHistoryTitle = data.about_history_title || ''
+    settings.aboutHistoryDescription = data.about_history_description || ''
+    settings.aboutHistoryItem1Title = data.about_history_item_1_title || ''
+    settings.aboutHistoryItem1Description = data.about_history_item_1_description || ''
+    settings.aboutHistoryItem2Title = data.about_history_item_2_title || ''
+    settings.aboutHistoryItem2Description = data.about_history_item_2_description || ''
+    settings.aboutHistoryItem3Title = data.about_history_item_3_title || ''
+    settings.aboutHistoryItem3Description = data.about_history_item_3_description || ''
     settings.peopleHelped = parseInt(data.stat_people_helped) || 0
     settings.volunteers = parseInt(data.stat_volunteers) || 0
   } catch (error) {
@@ -209,7 +286,7 @@ const loadSettings = async () => {
   }
 }
 
-const saveSettings = async (section: 'general' | 'contact' | 'seo' | 'social' | 'stats') => {
+const saveSettings = async (section: 'general' | 'contact' | 'seo' | 'social' | 'about' | 'stats') => {
   loading[section] = true
 
   try {
@@ -241,6 +318,17 @@ const saveSettings = async (section: 'general' | 'contact' | 'seo' | 'social' | 
         social_twitter: settings.twitter,
         social_instagram: settings.instagram,
         social_linkedin: settings.linkedin,
+      }
+    } else if (section === 'about') {
+      data = {
+        about_history_title: settings.aboutHistoryTitle,
+        about_history_description: settings.aboutHistoryDescription,
+        about_history_item_1_title: settings.aboutHistoryItem1Title,
+        about_history_item_1_description: settings.aboutHistoryItem1Description,
+        about_history_item_2_title: settings.aboutHistoryItem2Title,
+        about_history_item_2_description: settings.aboutHistoryItem2Description,
+        about_history_item_3_title: settings.aboutHistoryItem3Title,
+        about_history_item_3_description: settings.aboutHistoryItem3Description,
       }
     } else if (section === 'stats') {
       data = {

@@ -7,8 +7,18 @@ export class ResourcesController {
   constructor(private resourcesService: ResourcesService) {}
 
   @Get()
-  findAll(@Query('lang') lang?: string, @Query('type') type?: string) {
-    return this.resourcesService.findAll(lang, type);
+  findAll(
+    @Query('lang') lang?: string,
+    @Query('language') language?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.resourcesService.findAll(lang || language, type);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('admin')
+  findAllAdmin() {
+    return this.resourcesService.findAllAdmin();
   }
 
   @UseGuards(JwtAuthGuard)

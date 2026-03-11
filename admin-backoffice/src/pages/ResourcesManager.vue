@@ -15,19 +15,42 @@
 
     <div class="card">
       <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
-        <input v-model="searchQuery" type="text" :placeholder="$t('actions.search')" class="input max-w-xs" />
-        <select v-model="filterType" class="input max-w-[180px]">
-          <option value="">All Types</option>
-          <option value="guide">Guides</option>
-          <option value="video">Videos</option>
-          <option value="document">Documents</option>
-        </select>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <input v-model="searchQuery" type="text" :placeholder="$t('actions.search')" class="input max-w-xs" />
+          <select v-model="filterType" class="input max-w-[180px]">
+            <option value="">All Types</option>
+            <option value="guide">Guides</option>
+            <option value="video">Videos</option>
+            <option value="document">Documents</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-3">
+          <p class="text-xs text-gray-500" v-if="selectedResources.length">
+            {{ selectedResources.length }} selected
+          </p>
+          <button
+            v-if="selectedResources.length"
+            @click="deleteSelectedResources"
+            class="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+          >
+            Delete Selected
+          </button>
+        </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-gray-100">
+              <th class="text-left py-3 px-3 w-12">
+                <input
+                  type="checkbox"
+                  class="rounded border-gray-300 text-primary focus:ring-primary"
+                  :checked="allFilteredSelected"
+                  :indeterminate.prop="someFilteredSelected && !allFilteredSelected"
+                  @change="toggleSelectAllFiltered"
+                />
+              </th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Title (EN / FR)</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Type</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">File</th>
@@ -38,6 +61,14 @@
           </thead>
           <tbody>
             <tr v-for="resource in filteredResources" :key="resource.id" class="border-b border-gray-50 hover:bg-gray-50">
+              <td class="py-3 px-3 align-top">
+                <input
+                  :checked="selectedResources.includes(resource.id)"
+                  @change="toggleResourceSelection(resource.id)"
+                  type="checkbox"
+                  class="rounded border-gray-300 text-primary focus:ring-primary"
+                />
+              </td>
               <td class="py-3 px-3">
                 <div>
                   <p class="font-medium text-gray-900">{{ resource.title_en || 'Untitled resource' }}</p>
@@ -88,11 +119,21 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h3 class="text-xl font-headline font-semibold text-center mb-2">Delete Resource</h3>
-        <p class="text-gray-500 text-center mb-6">Are you sure you want to delete this resource? This action cannot be undone.</p>
+        <h3 class="text-xl font-headline font-semibold text-center mb-2">
+          {{ resourceToDelete ? 'Delete Resource' : 'Delete Resources' }}
+        </h3>
+        <p class="text-gray-500 text-center mb-6">
+          {{
+            resourceToDelete
+              ? 'Are you sure you want to delete this resource? This action cannot be undone.'
+              : `Are you sure you want to delete ${selectedResources.length} selected resources? This action cannot be undone.`
+          }}
+        </p>
         <div class="flex justify-end space-x-3">
           <button @click="closeDeleteModal" class="btn-secondary">Cancel</button>
-          <button @click="confirmDelete" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Delete</button>
+          <button @click="confirmDelete" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors" :disabled="bulkDeleting">
+            {{ bulkDeleting ? 'Deleting...' : 'Delete' }}
+          </button>
         </div>
       </div>
     </div>
@@ -134,9 +175,23 @@
           </div>
 
           <div>
-            <label class="label">File URL</label>
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <label class="label mb-0">File URL</label>
+              <div class="flex flex-wrap justify-end gap-2">
+                <button type="button" @click="openMediaPicker" class="px-3 py-2 text-xs font-medium text-primary bg-primary-light rounded-lg hover:bg-blue-100 transition-colors">
+                  Choose From Media
+                </button>
+                <label class="px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
+                  <input type="file" class="hidden" @change="uploadResourceFile" />
+                  {{ uploadingResourceFile ? 'Uploading...' : 'Upload To Media' }}
+                </label>
+                <router-link to="/media" class="px-3 py-2 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  Open Media Manager
+                </router-link>
+              </div>
+            </div>
             <input v-model="formData.fileUrl" type="text" class="input" placeholder="https://... or storage URL" />
-            <p class="text-xs text-gray-500 mt-1">You can paste a document, video, or media URL here.</p>
+            <p class="text-xs text-gray-500 mt-1">Uploaded files are stored in Media Manager automatically, then linked here.</p>
           </div>
 
           <div class="grid md:grid-cols-2 gap-4">
@@ -174,6 +229,79 @@
         </form>
       </div>
     </div>
+
+    <div v-if="showMediaPicker" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h3 class="text-xl font-headline font-semibold">Choose Resource File</h3>
+            <p class="text-sm text-gray-500 mt-1">Pick an existing file from Media Manager or upload a new one directly here.</p>
+          </div>
+          <button @click="showMediaPicker = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto">
+          <div class="mb-6">
+            <label class="block w-full cursor-pointer">
+              <input type="file" @change="uploadResourceFile" class="hidden" />
+              <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-primary hover:bg-primary-light/30 transition-colors">
+                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p class="text-sm text-gray-600 font-medium">Upload a new resource file to Media Manager</p>
+                <p class="text-xs text-gray-500 mt-1">Documents and videos uploaded here will be reusable across the backoffice.</p>
+              </div>
+            </label>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-medium">Available media files</h4>
+              <router-link to="/media" class="text-sm text-primary hover:underline">Go to full Media Manager</router-link>
+            </div>
+            <div v-if="loadingMedia" class="text-center py-8 text-gray-500">
+              Loading media...
+            </div>
+            <div v-else-if="filteredMediaLibrary.length === 0" class="text-center py-8 text-gray-500">
+              No matching files in media library yet.
+            </div>
+            <div v-else class="grid gap-3 md:grid-cols-2">
+              <button
+                v-for="media in filteredMediaLibrary"
+                :key="media.id"
+                type="button"
+                @click="selectMediaFile(media.url)"
+                class="rounded-2xl border border-gray-200 p-4 text-left hover:border-primary hover:bg-primary-light/30 transition-colors"
+                :class="formData.fileUrl === media.url ? 'border-primary bg-primary-light/50' : ''"
+              >
+                <div class="flex items-start gap-4">
+                  <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <img v-if="media.type === 'image'" :src="media.url" :alt="media.altText || 'Media file'" class="w-full h-full object-cover" />
+                    <video v-else-if="media.type === 'video'" :src="media.url" class="w-full h-full object-cover" muted></video>
+                    <svg v-else class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">{{ media.type }}</p>
+                    <p class="font-medium text-gray-900 mt-1 break-words">{{ media.altText || media.url.split('/').pop() || 'Media file' }}</p>
+                    <p class="text-xs text-gray-500 mt-1 break-all">{{ media.url }}</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+          <button @click="showMediaPicker = false" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -194,17 +322,30 @@ type ResourceItem = {
   description_fr: string
 }
 
+type MediaItem = {
+  id: string
+  url: string
+  type: 'image' | 'video' | 'document' | 'logo'
+  altText?: string
+}
+
 const toast = useToast()
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
 
 const resources = ref<ResourceItem[]>([])
+const mediaLibrary = ref<MediaItem[]>([])
 const showForm = ref(false)
 const showDeleteModal = ref(false)
+const showMediaPicker = ref(false)
 const editingResource = ref<ResourceItem | null>(null)
 const resourceToDelete = ref<string | null>(null)
+const selectedResources = ref<string[]>([])
 const searchQuery = ref('')
 const filterType = ref('')
 const saving = ref(false)
+const bulkDeleting = ref(false)
+const loadingMedia = ref(false)
+const uploadingResourceFile = ref(false)
 
 const formData = reactive({
   type: 'guide' as 'guide' | 'video' | 'document',
@@ -221,6 +362,21 @@ const authHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
 })
 
+const detectFileType = (file: File): MediaItem['type'] => {
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
+  const mimeType = file.type.toLowerCase()
+
+  if (mimeType.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext)) {
+    return 'image'
+  }
+
+  if (mimeType.startsWith('video/') || ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext)) {
+    return 'video'
+  }
+
+  return 'document'
+}
+
 const loadResources = async () => {
   try {
     const response = await axios.get(`${apiUrl}/resources/admin`, {
@@ -230,6 +386,21 @@ const loadResources = async () => {
   } catch (error) {
     console.error('Error loading resources:', error)
     toast.error('Failed to load resources')
+  }
+}
+
+const loadMediaLibrary = async () => {
+  loadingMedia.value = true
+  try {
+    const response = await axios.get(`${apiUrl}/media`, {
+      headers: authHeaders(),
+    })
+    mediaLibrary.value = response.data
+  } catch (error) {
+    console.error('Error loading media library:', error)
+    toast.error('Failed to load media library')
+  } finally {
+    loadingMedia.value = false
   }
 }
 
@@ -265,6 +436,7 @@ const editResource = (resource: ResourceItem) => {
 
 const closeForm = () => {
   showForm.value = false
+  showMediaPicker.value = false
   editingResource.value = null
   resetForm()
 }
@@ -277,6 +449,83 @@ const deleteResource = (id: string) => {
 const closeDeleteModal = () => {
   showDeleteModal.value = false
   resourceToDelete.value = null
+}
+
+const openMediaPicker = async () => {
+  showMediaPicker.value = true
+  if (!mediaLibrary.value.length) {
+    await loadMediaLibrary()
+  }
+}
+
+const selectMediaFile = (url: string) => {
+  formData.fileUrl = url
+  showMediaPicker.value = false
+}
+
+const uploadResourceFile = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  uploadingResourceFile.value = true
+  const uploadPayload = new FormData()
+  uploadPayload.append('file', file)
+  uploadPayload.append('type', detectFileType(file))
+  uploadPayload.append('alt_text', formData.titleEn || file.name.replace(/\.[^/.]+$/, ''))
+
+  try {
+    const response = await axios.post(`${apiUrl}/media/upload`, uploadPayload, {
+      headers: {
+        ...authHeaders(),
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    formData.fileUrl = response.data.url
+    toast.success('File uploaded to media library successfully!')
+    await loadMediaLibrary()
+    showMediaPicker.value = false
+  } catch (error: any) {
+    console.error('Error uploading resource file:', error)
+    toast.error(error.response?.data?.message || 'Failed to upload file to media library')
+  } finally {
+    target.value = ''
+    uploadingResourceFile.value = false
+  }
+}
+
+const toggleResourceSelection = (id: string) => {
+  if (selectedResources.value.includes(id)) {
+    selectedResources.value = selectedResources.value.filter((resourceId) => resourceId !== id)
+    return
+  }
+
+  selectedResources.value = [...selectedResources.value, id]
+}
+
+const toggleSelectAllFiltered = () => {
+  if (allFilteredSelected.value) {
+    selectedResources.value = selectedResources.value.filter(
+      (id) => !filteredResources.value.some((resource) => resource.id === id),
+    )
+    return
+  }
+
+  const nextSelection = new Set(selectedResources.value)
+  filteredResources.value.forEach((resource) => {
+    nextSelection.add(resource.id)
+  })
+  selectedResources.value = Array.from(nextSelection)
+}
+
+const deleteSelectedResources = () => {
+  if (!selectedResources.value.length) {
+    return
+  }
+
+  resourceToDelete.value = null
+  showDeleteModal.value = true
 }
 
 const saveResource = async () => {
@@ -325,18 +574,36 @@ const saveResource = async () => {
 }
 
 const confirmDelete = async () => {
-  if (!resourceToDelete.value) return
+  if (!resourceToDelete.value && !selectedResources.value.length) return
+
+  bulkDeleting.value = true
 
   try {
-    await axios.delete(`${apiUrl}/resources/${resourceToDelete.value}`, {
-      headers: authHeaders(),
-    })
-    toast.success('Resource deleted successfully!')
+    if (resourceToDelete.value) {
+      await axios.delete(`${apiUrl}/resources/${resourceToDelete.value}`, {
+        headers: authHeaders(),
+      })
+      selectedResources.value = selectedResources.value.filter((id) => id !== resourceToDelete.value)
+      toast.success('Resource deleted successfully!')
+    } else {
+      await Promise.all(
+        selectedResources.value.map((id) =>
+          axios.delete(`${apiUrl}/resources/${id}`, {
+            headers: authHeaders(),
+          }),
+        ),
+      )
+      toast.success(`${selectedResources.value.length} resources deleted successfully!`)
+      selectedResources.value = []
+    }
+
     closeDeleteModal()
     await loadResources()
   } catch (error) {
     console.error('Error deleting resource:', error)
     toast.error('Failed to delete resource')
+  } finally {
+    bulkDeleting.value = false
   }
 }
 
@@ -356,7 +623,24 @@ const filteredResources = computed(() => {
   })
 })
 
+const filteredMediaLibrary = computed(() => {
+  if (formData.type === 'video') {
+    return mediaLibrary.value.filter((media) => media.type === 'video')
+  }
+
+  return mediaLibrary.value.filter((media) => media.type === 'document' || media.type === 'image')
+})
+
+const allFilteredSelected = computed(() => {
+  return filteredResources.value.length > 0 && filteredResources.value.every((resource) => selectedResources.value.includes(resource.id))
+})
+
+const someFilteredSelected = computed(() => {
+  return filteredResources.value.some((resource) => selectedResources.value.includes(resource.id))
+})
+
 onMounted(() => {
   loadResources()
+  loadMediaLibrary()
 })
 </script>

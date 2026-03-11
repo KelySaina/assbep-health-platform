@@ -7,6 +7,10 @@ A full-stack multilingual (EN/FR) health platform built for ASSBEP, featuring a 
 ## 📋 Table of Contents
 
 - [Architecture](#-architecture)
+  - [System Architecture](#system-architecture-diagram)
+  - [Database Schema](#-database-schema)
+  - [Deployment Architecture](#deployment-architecture-diagram)
+  - [Multilingual Data Flow](#multilingual-data-flow-diagram)
 - [Quick Start](#-quick-start)
 - [Production Deployment](#-production-deployment)
   - [EC2 GitHub Runner Setup](#ec2-github-runner-setup)
@@ -36,6 +40,374 @@ assbep-health-platform/
 - **API** (4000) - NestJS backend
 - **Public Website** (3000) - Vue 3 frontend
 - **Admin Backoffice** (3001) - Vue 3 CMS
+
+### System Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Frontend Applications"
+        PUB[Public Website<br/>Vue 3 + Vite<br/>Port 3000]
+        ADMIN[Admin Backoffice<br/>Vue 3 + Pinia<br/>Port 3001]
+    end
+
+    subgraph "Backend API"
+        API[NestJS API<br/>Port 4000]
+        AUTH[JWT Auth<br/>Module]
+        PRISMA[Prisma ORM]
+    end
+
+    subgraph "Data Layer"
+        DB[(PostgreSQL<br/>Database<br/>Port 5433)]
+        MINIO[MinIO S3<br/>Storage<br/>Port 9000/9001]
+    end
+
+    subgraph "Services"
+        PROG[Programs Service]
+        ART[Articles Service]
+        RES[Resources Service]
+        MED[Media Service]
+        PHRASES[Translations Service]
+    end
+
+    PUB -->|HTTP REST| API
+    ADMIN -->|HTTP REST + Auth| API
+
+    API --> AUTH
+    API --> PRISMA
+    API --> PROG
+    API --> ART
+    API --> RES
+    API --> MED
+    API --> PHRASES
+
+    PRISMA --> DB
+    MED --> MINIO
+
+    PROG -.->|Multilingual| DB
+    ART -.->|Multilingual| DB
+    RES -.->|Multilingual| DB
+    PHRASES -.->|i18n| DB
+
+    style PUB fill:#3b82f6,color:#fff
+    style ADMIN fill:#1e5aa8,color:#fff
+    style API fill:#10b981,color:#fff
+    style DB fill:#f59e0b,color:#fff
+    style MINIO fill:#ef4444,color:#fff
+```
+
+---
+
+## 📊 Database Schema
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    User ||--o{ Article : "authors"
+
+    Program ||--|{ ProgramTranslation : "has"
+    Article ||--|{ ArticleTranslation : "has"
+    Resource ||--|{ ResourceTranslation : "has"
+
+    User {
+        uuid id PK
+        string email UK
+        string password
+        string name
+        enum role
+        datetime created_at
+        datetime updated_at
+    }
+
+    Program {
+        uuid id PK
+        string slug UK
+        string category
+        string image
+        int order
+        boolean published
+        datetime created_at
+        datetime updated_at
+    }
+
+    ProgramTranslation {
+        uuid id PK
+        uuid program_id FK
+        string language
+        string title
+        text description
+        text content
+    }
+
+    Article {
+        uuid id PK
+        string slug UK
+        string category
+        string image
+        uuid author_id FK
+        boolean published
+        datetime published_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    ArticleTranslation {
+        uuid id PK
+        uuid article_id FK
+        string language
+        string title
+        text excerpt
+        text content
+    }
+
+    Resource {
+        uuid id PK
+        string type
+        string file_url
+        boolean published
+        int order
+        datetime created_at
+        datetime updated_at
+    }
+
+    ResourceTranslation {
+        uuid id PK
+        uuid resource_id FK
+        string language
+        string title
+        text description
+    }
+
+    Partner {
+        uuid id PK
+        string name
+        string logo
+        string website
+        int order
+    }
+
+    Phrase {
+        uuid id PK
+        string key
+        string group
+        string language
+        text value
+    }
+
+    Media {
+        uuid id PK
+        string filename
+        string url
+        string type
+        string alt_text
+        int size
+        datetime created_at
+    }
+
+    ContactRequest {
+        uuid id PK
+        string name
+        string email
+        string subject
+        text message
+        boolean read
+        datetime created_at
+    }
+
+    SiteSetting {
+        uuid id PK
+        string key UK
+        text value
+    }
+```
+
+### Database Tables Overview
+
+#### 👥 **Users**
+- Authentication and authorization
+- Role-based access: SUPER_ADMIN, EDITOR, TRANSLATOR
+- Authors articles
+
+#### 🏥 **Programs** (Health Programs)
+- Main program entity with metadata
+- Separate translations table for EN/FR content
+- Category filtering and ordering
+
+#### 📰 **Articles** (Blog/News)
+- Blog posts and news articles
+- Multilingual content (EN/FR)
+- Author tracking and publication dates
+
+#### 📚 **Resources** (Downloadable Resources)
+- Guides, videos, documents
+- File storage in MinIO S3
+- Type categorization
+
+#### 🤝 **Partners**
+- Partner organizations
+- Logo and website links
+- Display ordering
+
+#### 🌐 **Phrases** (i18n Translations)
+- Dynamic UI translations
+- Grouped by section (general, stats, etc.)
+- Language-specific content
+
+#### 📁 **Media**
+- Central media library
+- MinIO S3 storage integration
+- Type detection (image/video/document)
+
+#### 📧 **Contact Requests**
+- Contact form submissions
+- Read/unread tracking
+
+#### ⚙️ **Site Settings**
+- Site-wide configuration
+- Stats (people_helped, programs_launched, volunteers, partners)
+- Flexible key-value storage
+
+### Multilingual Architecture
+
+All content uses a **translation table pattern**:
+- **Main table** → Invariant data (ID, dates, flags, metadata)
+- **Translation table** → Language-specific content (title, description, content)
+
+**Example:**
+```sql
+-- Main entity
+programs(id, slug, category, image, published, ...)
+
+-- Translations
+program_translations(id, program_id, language, title, description, content)
+```
+
+### Deployment Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Development"
+        DEV[👨‍💻 Developer]
+        GIT[GitHub Repository]
+    end
+
+    subgraph "CI/CD Pipeline"
+        GHA[GitHub Actions<br/>Workflow]
+        RUNNER[Self-Hosted Runner<br/>on EC2]
+    end
+
+    subgraph "Production - EC2 Instance"
+        subgraph "Docker Containers"
+            PUB_C[Public Website<br/>Container<br/>:3000]
+            ADMIN_C[Admin Backoffice<br/>Container<br/>:3001]
+            API_C[API Container<br/>:4000]
+            DB_C[(PostgreSQL<br/>Container<br/>:5433)]
+            MINIO_C[MinIO Container<br/>:9000/:9001]
+        end
+    end
+
+    subgraph "Alternative - Oracle VM"
+        subgraph "API-Only Deployment"
+            CADDY[Caddy Reverse Proxy<br/>HTTPS :443]
+            API_O[API Container]
+            DB_O[(PostgreSQL)]
+            MINIO_O[MinIO]
+        end
+        VERCEL1[Vercel<br/>Public Website]
+        VERCEL2[Vercel<br/>Admin Backoffice]
+    end
+
+    subgraph "Users"
+        PUBLIC[👥 Public Users]
+        ADMINS[👨‍💼 Administrators]
+    end
+
+    DEV -->|git push| GIT
+    GIT -->|webhook| GHA
+    GHA -->|triggers| RUNNER
+    RUNNER -->|docker compose| PUB_C
+    RUNNER -->|docker compose| ADMIN_C
+    RUNNER -->|docker compose| API_C
+    RUNNER -->|docker compose| DB_C
+    RUNNER -->|docker compose| MINIO_C
+
+    PUBLIC -->|HTTP| PUB_C
+    ADMINS -->|HTTP| ADMIN_C
+    PUB_C -->|REST| API_C
+    ADMIN_C -->|REST| API_C
+    API_C -->|SQL| DB_C
+    API_C -->|S3 API| MINIO_C
+
+    VERCEL1 -->|HTTPS| CADDY
+    VERCEL2 -->|HTTPS| CADDY
+    CADDY -->|Proxy| API_O
+    API_O --> DB_O
+    API_O --> MINIO_O
+
+    style DEV fill:#6366f1,color:#fff
+    style GIT fill:#000,color:#fff
+    style GHA fill:#2088ff,color:#fff
+    style PUB_C fill:#3b82f6,color:#fff
+    style ADMIN_C fill:#1e5aa8,color:#fff
+    style API_C fill:#10b981,color:#fff
+    style DB_C fill:#f59e0b,color:#fff
+    style MINIO_C fill:#ef4444,color:#fff
+    style CADDY fill:#06b6d4,color:#fff
+    style VERCEL1 fill:#000,color:#fff
+    style VERCEL2 fill:#000,color:#fff
+```
+
+### Multilingual Data Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 User (Browser)
+    participant Web as 🌐 Public Website
+    participant API as 🔌 API
+    participant DB as 🗄️ PostgreSQL
+    participant S3 as 📦 MinIO S3
+
+    Note over User,S3: Homepage Loading (French)
+
+    User->>Web: Visit homepage (lang: fr)
+    Web->>API: GET /api/programs?language=fr
+    API->>DB: SELECT FROM programs/program_translations
+    DB-->>API: Programs with FR translations
+    API-->>Web: JSON Programs (FR)
+
+    Web->>API: GET /api/articles?language=fr
+    API->>DB: SELECT FROM articles/article_translations
+    DB-->>API: Articles with FR translations
+    API-->>Web: JSON Articles (FR)
+
+    Web->>API: GET /api/settings/stats
+    API->>DB: SELECT FROM site_settings
+    DB-->>API: Stats (people_helped, programs_launched, etc)
+    API-->>Web: JSON Stats
+    Web->>Web: Animate numbers
+
+    Web->>API: GET /api/phrases?language=fr
+    API->>DB: SELECT FROM phrases WHERE language='fr'
+    DB-->>API: All FR phrases
+    API-->>Web: JSON i18n phrases
+
+    Web->>S3: GET /storage/assbep-media/program-image.jpg
+    S3-->>Web: Image
+
+    Web-->>User: Complete page in French
+
+    Note over User,S3: Language Switch
+
+    User->>Web: Click EN flag
+    Web->>Web: Change i18n locale
+    Web->>API: GET /api/programs?language=en
+    API->>DB: SELECT ... WHERE language='en'
+    DB-->>API: Programs EN
+    API-->>Web: JSON Programs (EN)
+    Web-->>User: Content updated in English
+```
+
+---
 
 ## 🚀 Quick Start
 

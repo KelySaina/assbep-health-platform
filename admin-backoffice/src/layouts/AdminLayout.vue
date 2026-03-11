@@ -25,7 +25,7 @@
           :key="item.path"
           :to="item.path"
           class="flex items-center space-x-3 px-3 py-2.5 text-sm text-gray-300 rounded-lg hover:bg-white/10 hover:text-white transition-colors"
-          active-class="!bg-primary !text-white"
+          exact-active-class="!bg-primary !text-white"
         >
           <span v-html="item.icon" class="w-5 h-5"></span>
           <span>{{ $t(item.label) }}</span>

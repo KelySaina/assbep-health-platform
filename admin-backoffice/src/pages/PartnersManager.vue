@@ -25,6 +25,18 @@
       </div>
     </div>
 
+    <div class="flex items-center justify-between mb-2">
+      <label class="flex items-center space-x-2 text-sm text-gray-600">
+        <input
+          type="checkbox"
+          :checked="selectedPartners.length === partners.length && partners.length > 0"
+          @change="toggleSelectAll"
+          class="rounded border-gray-300 text-primary focus:ring-primary"
+        />
+        <span>Select All ({{ selectedPartners.length }}/{{ partners.length }})</span>
+      </label>
+    </div>
+
     <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div v-for="partner in partners" :key="partner.id" class="card text-center group relative">
         <input
@@ -146,6 +158,14 @@ const deletePartner = (id: string) => {
 const bulkDelete = () => {
   partnerToDelete.value = null
   showDeleteModal.value = true
+}
+
+const toggleSelectAll = () => {
+  if (selectedPartners.value.length === partners.value.length) {
+    selectedPartners.value = []
+  } else {
+    selectedPartners.value = partners.value.map(p => p.id)
+  }
 }
 
 const confirmDelete = async () => {

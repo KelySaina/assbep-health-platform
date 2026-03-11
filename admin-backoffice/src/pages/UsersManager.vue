@@ -49,8 +49,8 @@
                 </div>
               </td>
               <td class="py-3 px-3 text-right">
-                <button class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>
-                <button class="text-red-500 hover:underline text-xs">{{ $t('actions.delete') }}</button>
+                <button @click="editUser(user)" class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>
+                <button @click="deleteUser(user.id)" class="text-red-500 hover:underline text-xs">{{ $t('actions.delete') }}</button>
               </td>
             </tr>
           </tbody>
@@ -58,40 +58,57 @@
       </div>
     </div>
 
-    <!-- Add User Modal -->
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-headline font-semibold text-center mb-2">Delete User</h3>
+        <p class="text-gray-500 text-center mb-6">Are you sure you want to delete this user? This action cannot be undone.</p>
+        <div class="flex justify-end space-x-3">
+          <button @click="showDeleteModal = false; userToDelete = null" class="btn-secondary">Cancel</button>
+          <button @click="confirmDelete" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
     <div v-if="showForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl max-w-md w-full p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-headline font-semibold">Add User</h3>
+          <h3 class="text-xl font-headline font-semibold">{{ editingUser ? 'Edit User' : 'Add User' }}</h3>
           <button @click="showForm = false" class="text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <form @submit.prevent="showForm = false" class="space-y-4">
+        <form @submit.prevent="saveUser" class="space-y-4">
           <div>
             <label class="label">Name</label>
-            <input type="text" class="input" placeholder="Full name" />
+            <input v-model="formData.name" type="text" class="input" placeholder="Full name" required />
           </div>
           <div>
             <label class="label">Email</label>
-            <input type="email" class="input" placeholder="email@example.com" />
+            <input v-model="formData.email" type="email" class="input" placeholder="email@example.com" required />
           </div>
-          <div>
+          <div v-if="!editingUser">
             <label class="label">Password</label>
-            <input type="password" class="input" placeholder="••••••••" />
+            <input v-model="formData.password" type="password" class="input" placeholder="••••••••" required />
           </div>
           <div>
             <label class="label">Role</label>
-            <select class="input">
-              <option value="super_admin">Super Admin</option>
-              <option value="editor">Editor</option>
-              <option value="translator">Translator</option>
+            <select v-model="formData.role" class="input">
+              <option value="SUPER_ADMIN">Super Admin</option>
+              <option value="EDITOR">Editor</option>
+              <option value="TRANSLATOR">Translator</option>
             </select>
           </div>
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="showForm = false" class="btn-secondary">{{ $t('actions.cancel') }}</button>
+            <button type="button" @click="closeForm" class="btn-secondary">{{ $t('actions.cancel') }}</button>
             <button type="submit" class="btn-primary">{{ $t('actions.save') }}</button>
           </div>
         </form>
@@ -108,6 +125,16 @@ import { useToast } from 'vue-toastification'
 const toast = useToast()
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const showForm = ref(false)
+const showDeleteModal = ref(false)
+const userToDelete = ref<string | null>(null)
+const editingUser = ref<any>(null)
+
+const formData = ref({
+  name: '',
+  email: '',
+  password: '',
+  role: 'EDITOR'
+})
 
 const users = ref<any[]>([])
 
@@ -135,6 +162,83 @@ const roleColor = (role: string) => {
     TRANSLATOR: 'bg-purple-100 text-purple-700',
   }
   return colors[role] || 'bg-gray-100 text-gray-700'
+}
+
+const editUser = (user: any) => {
+  editingUser.value = user
+  formData.value = {
+    name: user.name,
+    email: user.email,
+    password: '',
+    role: user.role
+  }
+  showForm.value = true
+}
+
+const deleteUser = (id: string) => {
+  userToDelete.value = id
+  showDeleteModal.value = true
+}
+
+const confirmDelete = async () => {
+  try {
+    await axios.delete(`${apiUrl}/users/${userToDelete.value}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })
+    toast.success('User deleted successfully!')
+    showDeleteModal.value = false
+    userToDelete.value = null
+    loadUsers()
+  } catch (error) {
+    toast.error('Failed to delete user')
+  }
+}
+
+const saveUser = async () => {
+  try {
+    if (editingUser.value) {
+      // Update existing user
+      const updateData: any = {
+        name: formData.value.name,
+        email: formData.value.email,
+        role: formData.value.role
+      }
+      if (formData.value.password) {
+        updateData.password = formData.value.password
+      }
+      await axios.put(`${apiUrl}/users/${editingUser.value.id}`, updateData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+        }
+      })
+      toast.success('User updated successfully!')
+    } else {
+      // Create new user
+      await axios.post(`${apiUrl}/users`, formData.value, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+        }
+      })
+      toast.success('User created successfully!')
+    }
+    closeForm()
+    loadUsers()
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || 'Failed to save user')
+  }
+}
+
+const closeForm = () => {
+  showForm.value = false
+  editingUser.value = null
+  formData.value = {
+    name: '',
+    email: '',
+    password: '',
+    role: 'EDITOR'
+  }
 }
 
 onMounted(() => {

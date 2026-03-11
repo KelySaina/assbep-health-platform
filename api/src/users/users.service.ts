@@ -8,8 +8,33 @@ export class UsersService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: { id: true, email: true, name: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        profilePicture: true,
+        position: true,
+        showInTeam: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getTeamMembers() {
+    return this.prisma.user.findMany({
+      where: { showInTeam: true },
+      select: {
+        id: true,
+        name: true,
+        position: true,
+        bio: true,
+        profilePicture: true,
+        linkedin: true,
+        twitter: true,
+      },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
@@ -28,15 +53,32 @@ export class UsersService {
 
   async update(id: string, data: any) {
     const updateData: any = {};
-    if (data.name) updateData.name = data.name;
-    if (data.email) updateData.email = data.email;
-    if (data.role) updateData.role = data.role;
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.role !== undefined) updateData.role = data.role;
+    if (data.position !== undefined) updateData.position = data.position;
+    if (data.bio !== undefined) updateData.bio = data.bio;
+    if (data.profilePicture !== undefined) updateData.profilePicture = data.profilePicture;
+    if (data.showInTeam !== undefined) updateData.showInTeam = data.showInTeam;
+    if (data.linkedin !== undefined) updateData.linkedin = data.linkedin;
+    if (data.twitter !== undefined) updateData.twitter = data.twitter;
     if (data.password) updateData.password = await bcrypt.hash(data.password, 12);
 
     return this.prisma.user.update({
       where: { id },
       data: updateData,
-      select: { id: true, email: true, name: true, role: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        profilePicture: true,
+        position: true,
+        bio: true,
+        showInTeam: true,
+        linkedin: true,
+        twitter: true,
+      },
     });
   }
 

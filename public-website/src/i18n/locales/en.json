@@ -102,6 +102,11 @@
     "team_title": "Our Team",
     "team_subtitle": "Meet the dedicated professionals behind ASSBEP"
   },
+  "team": {
+    "title": "Our Team",
+    "subtitle": "Meet the dedicated professionals working to improve community health",
+    "noMembers": "No team members to display at this time."
+  },
   "footer": {
     "description": "ASSBEP is dedicated to improving community health through accessible healthcare services, education, and outreach programs.",
     "quick_links": "Quick Links",

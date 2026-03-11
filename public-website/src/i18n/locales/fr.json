@@ -102,6 +102,11 @@
     "team_title": "Notre Équipe",
     "team_subtitle": "Rencontrez les professionnels dévoués derrière ASSBEP"
   },
+  "team": {
+    "title": "Notre Équipe",
+    "subtitle": "Rencontrez les professionnels dévoués qui travaillent à l'amélioration de la santé communautaire",
+    "noMembers": "Aucun membre de l'équipe à afficher pour le moment."
+  },
   "footer": {
     "description": "ASSBEP est dédié à l'amélioration de la santé communautaire grâce à des services de santé accessibles, à l'éducation et à des programmes de sensibilisation.",
     "quick_links": "Liens Rapides",

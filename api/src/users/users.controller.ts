@@ -12,6 +12,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('team')
+  getTeam() {
+    return this.usersService.getTeamMembers();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() body: { email: string; password: string; name: string; role?: string }) {

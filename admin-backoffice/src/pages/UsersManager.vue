@@ -21,7 +21,8 @@
               <th class="text-left py-3 px-3 text-gray-500 font-medium">User</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Email</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Role</th>
-              <th class="text-left py-3 px-3 text-gray-500 font-medium">Permissions</th>
+              <th class="text-left py-3 px-3 text-gray-500 font-medium">Position</th>
+              <th class="text-center py-3 px-3 text-gray-500 font-medium">Team</th>
               <th class="text-right py-3 px-3 text-gray-500 font-medium">Actions</th>
             </tr>
           </thead>
@@ -29,7 +30,10 @@
             <tr v-for="user in users" :key="user.id" class="border-b border-gray-50 hover:bg-gray-50">
               <td class="py-3 px-3">
                 <div class="flex items-center space-x-3">
-                  <div class="w-8 h-8 bg-primary-light rounded-lg flex items-center justify-center text-primary text-xs font-bold">
+                  <div v-if="user.profilePicture" class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
+                    <img :src="user.profilePicture" :alt="user.name" class="w-full h-full object-cover" />
+                  </div>
+                  <div v-else class="w-8 h-8 bg-primary-light rounded-lg flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
                     {{ user.name.charAt(0) }}
                   </div>
                   <span class="font-medium text-gray-900">{{ user.name }}</span>
@@ -41,12 +45,16 @@
                   {{ user.role.replace('_', ' ') }}
                 </span>
               </td>
-              <td class="py-3 px-3">
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="perm in user.permissions" :key="perm" class="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                    {{ perm }}
-                  </span>
-                </div>
+              <td class="py-3 px-3 text-gray-600 text-sm">
+                {{ user.position || '-' }}
+              </td>
+              <td class="py-3 px-3 text-center">
+                <span v-if="user.showInTeam" class="inline-flex items-center justify-center w-6 h-6 bg-green-100 rounded-full">
+                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+                <span v-else class="text-gray-300">-</span>
               </td>
               <td class="py-3 px-3 text-right">
                 <button @click="editUser(user)" class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>

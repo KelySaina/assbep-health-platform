@@ -34,7 +34,7 @@
 
       <!-- User -->
       <div class="border-t border-white/10 p-4">
-        <div class="flex items-center space-x-3">
+        <router-link to="/profile" class="flex items-center space-x-3 mb-3 px-2 py-2 rounded-lg hover:bg-white/10 transition-colors">
           <div class="w-8 h-8 bg-primary/30 rounded-lg flex items-center justify-center text-primary-light text-xs font-bold">
             {{ authStore.user?.name?.charAt(0) || 'A' }}
           </div>
@@ -42,12 +42,13 @@
             <p class="text-sm font-medium truncate">{{ authStore.user?.name || 'Admin' }}</p>
             <p class="text-xs text-gray-400 truncate">{{ authStore.user?.role || 'super_admin' }}</p>
           </div>
-          <button @click="handleLogout" class="text-gray-400 hover:text-white transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
+        </router-link>
+        <button @click="handleLogout" class="w-full flex items-center justify-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
 
@@ -115,6 +116,7 @@ const currentPageTitle = computed(() => {
     MediaManager: 'Media Manager',
     PartnersManager: 'Partners',
     UsersManager: 'Users',
+    UserProfile: 'My Profile',
     Settings: 'Settings',
   }
   return titles[name] || 'Dashboard'

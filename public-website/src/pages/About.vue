@@ -92,31 +92,10 @@
     </section>
 
     <!-- Team -->
-    <section class="py-16">
-      <div class="container-narrow text-center">
-        <h2 class="section-title">{{ $t('about.team_title') }}</h2>
-        <p class="section-subtitle mb-12">{{ $t('about.team_subtitle') }}</p>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div v-for="member in teamMembers" :key="member.name" class="text-center">
-            <div class="w-24 h-24 bg-primary-light rounded-2xl mx-auto mb-4 flex items-center justify-center">
-              <svg class="w-12 h-12 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <h4 class="font-headline font-semibold text-gray-900">{{ member.name }}</h4>
-            <p class="text-sm text-neutral">{{ member.role }}</p>
-          </div>
-        </div>
-      </div>
-    </section>
+    <TeamSection />
   </div>
 </template>
 
 <script setup lang="ts">
-const teamMembers = [
-  { name: 'Dr. Jean Kamga', role: 'Executive Director' },
-  { name: 'Marie Dupont', role: 'Medical Director' },
-  { name: 'Paul Ngassa', role: 'Programs Manager' },
-  { name: 'Sylvie Mbarga', role: 'Community Outreach' },
-]
+import TeamSection from '@/components/TeamSection.vue'
 </script>

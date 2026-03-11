@@ -18,11 +18,11 @@
         {{ $t('team.noMembers') }}
       </div>
 
-      <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+      <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 justify-items-center">
         <div
           v-for="member in team"
           :key="member.id"
-          class="card group hover:shadow-2xl transition-all duration-300 overflow-hidden"
+          class="card group hover:shadow-2xl transition-all duration-300 overflow-hidden w-full max-w-sm"
         >
           <!-- Profile Picture -->
           <div class="relative overflow-hidden bg-gradient-to-br from-primary/10 to-primary-light/10 aspect-square">
@@ -72,14 +72,14 @@
           </div>
 
           <!-- Member Info -->
-          <div class="p-6">
+          <div class="p-6 text-center">
             <h3 class="text-xl font-headline font-semibold text-gray-900 mb-1">
               {{ member.name }}
             </h3>
             <p v-if="member.position" class="text-sm font-medium text-primary mb-3">
               {{ member.position }}
             </p>
-            <p v-if="member.bio" class="text-gray-600 text-sm leading-relaxed line-clamp-4">
+            <p v-if="member.bio" class="text-gray-600 text-sm leading-relaxed line-clamp-4 mx-auto max-w-xs">
               {{ member.bio }}
             </p>
           </div>

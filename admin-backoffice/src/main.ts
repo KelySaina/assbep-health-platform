@@ -5,11 +5,13 @@ import 'vue-toastification/dist/index.css'
 import App from './App.vue'
 import router from './router'
 import i18n from './i18n'
+import { useAuthStore } from '@/stores/auth'
 import './assets/styles/main.css'
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(i18n)
 app.use(Toast, {
@@ -26,5 +28,12 @@ app.use(Toast, {
   icon: true,
   rtl: false,
 })
+
+const authStore = useAuthStore(pinia)
+if (authStore.token && !authStore.user) {
+  authStore.fetchCurrentUser().catch(() => {
+    // Invalid tokens are handled by the store logout path.
+  })
+}
 
 app.mount('#app')

@@ -300,6 +300,7 @@ const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const showMediaPicker = ref(false)
 const loadingMedia = ref(false)
 const mediaLibrary = ref<any[]>([])
+const currentUserId = ref('')
 
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
@@ -367,6 +368,8 @@ const loadCurrentUser = async () => {
     })
 
     const user = response.data
+    currentUserId.value = user.id || ''
+    authStore.setCurrentUser(user)
     profileData.name = user.name || ''
     profileData.email = user.email || ''
     profileData.position = user.position || ''
@@ -434,7 +437,14 @@ const selectMediaImage = (url: string) => {
 const updateProfile = async () => {
   try {
     const token = localStorage.getItem('admin_token')
-    await axios.put(`${apiUrl}/users/${authStore.user?.id}`, {
+    const userId = currentUserId.value || authStore.user?.id
+
+    if (!userId) {
+      toast.error('Unable to determine the current user. Please refresh the page.')
+      return
+    }
+
+    await axios.put(`${apiUrl}/users/${userId}`, {
       name: profileData.name,
       email: profileData.email,
       position: profileData.position,

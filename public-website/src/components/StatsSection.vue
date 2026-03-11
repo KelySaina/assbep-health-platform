@@ -14,11 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import type { Statistic } from '@/types'
 
 const props = defineProps<{ stats: Statistic[] }>()
 const animatedValues = ref<Record<string, number>>({})
+const activeTimers = ref<Record<string, number>>({})
 
 const formatNumber = (num: number) => {
   if (num >= 1000) return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K'
@@ -26,6 +27,11 @@ const formatNumber = (num: number) => {
 }
 
 const animateValue = (key: string, end: number, duration: number) => {
+  // Clear any existing timer for this key
+  if (activeTimers.value[key]) {
+    clearInterval(activeTimers.value[key])
+  }
+
   let start = 0
   const increment = end / (duration / 16)
   const timer = setInterval(() => {
@@ -33,15 +39,25 @@ const animateValue = (key: string, end: number, duration: number) => {
     if (start >= end) {
       animatedValues.value[key] = end
       clearInterval(timer)
+      delete activeTimers.value[key]
     } else {
       animatedValues.value[key] = Math.floor(start)
     }
   }, 16)
+
+  activeTimers.value[key] = timer
 }
 
-onMounted(() => {
-  props.stats.forEach((stat) => {
-    animateValue(stat.key, stat.value, 2000)
-  })
-})
+// Watch for stats changes and trigger animations
+watch(
+  () => props.stats,
+  (newStats) => {
+    if (newStats && newStats.length > 0) {
+      newStats.forEach((stat) => {
+        animateValue(stat.key, stat.value, 2000)
+      })
+    }
+  },
+  { immediate: true }
+)
 </script>

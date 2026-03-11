@@ -58,6 +58,13 @@ Edit `.env.api.production` and set at minimum:
 - `CORS_ORIGIN` with your two Vercel project URLs
 - all secrets and passwords
 
+Important for MinIO:
+
+- in this setup, `MINIO_ACCESS_KEY` must match `MINIO_ROOT_USER`
+- and `MINIO_SECRET_KEY` must match `MINIO_ROOT_PASSWORD`
+
+This stack does not create a separate MinIO API user automatically.
+
 ## 4. Start the backend stack
 
 ```bash

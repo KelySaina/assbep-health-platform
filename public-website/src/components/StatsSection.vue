@@ -19,7 +19,7 @@ import type { Statistic } from '@/types'
 
 const props = defineProps<{ stats: Statistic[] }>()
 const animatedValues = ref<Record<string, number>>({})
-const activeTimers = ref<Record<string, number>>({})
+const activeTimers = ref<Record<string, ReturnType<typeof setInterval>>>({})
 
 const formatNumber = (num: number) => {
   if (num >= 1000) return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K'

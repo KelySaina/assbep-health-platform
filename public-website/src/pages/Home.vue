@@ -25,9 +25,7 @@
               </div>
               <div class="flex items-start space-x-3">
                 <div class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
+                  <img src="/logo.jpeg" alt="ASSBEP Logo" class="w-5 h-5 object-contain" />
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900">{{ $t('mission.values_title') }}</h4>
@@ -37,7 +35,10 @@
             </div>
           </div>
           <div class="bg-primary-light rounded-3xl p-8 flex items-center justify-center">
-            <img src="/logo.jpeg" alt="ASSBEP Logo" class="w-64 h-64 object-contain" />
+            <svg class="w-64 h-64 text-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="0.5"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
           </div>
         </div>
       </div>

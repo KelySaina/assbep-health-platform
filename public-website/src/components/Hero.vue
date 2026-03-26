@@ -30,16 +30,13 @@
         <div class="hidden md:flex justify-center">
           <div class="relative">
             <div class="w-80 h-80 bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-sm">
-              <svg class="w-48 h-48 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
+              <img src="/logo.jpeg" alt="ASSBEP Logo" class="w-64 h-64 object-contain rounded-2xl" />
             </div>
-            <div class="absolute -top-4 -right-4 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
+            <div class="absolute -top-4 -right-4 bg-primary-dark/80 backdrop-blur-sm rounded-2xl p-4 text-white">
               <div class="text-2xl font-bold">{{ formatNumber(store.stats.find(s => s.key === 'people_helped')?.value || 0) }}</div>
               <div class="text-xs text-blue-200">{{ $t('stats.people_helped') }}</div>
             </div>
-            <div class="absolute -bottom-4 -left-4 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
+            <div class="absolute -bottom-4 -left-4 bg-primary-dark/80 backdrop-blur-sm rounded-2xl p-4 text-white">
               <div class="text-2xl font-bold">{{ store.stats.find(s => s.key === 'programs_launched')?.value || 0 }}</div>
               <div class="text-xs text-blue-200">{{ $t('stats.programs_launched') }}</div>
             </div>

@@ -25,7 +25,7 @@
               </div>
               <div class="flex items-start space-x-3">
                 <div class="w-10 h-10 bg-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
-                  <img src="/logo.jpeg" alt="ASSBEP Logo" class="w-5 h-5 object-contain" />
+                  <img src="/logo.jpeg" alt="ASSBEP Logo" class="object-contain" />
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-900">{{ $t('mission.values_title') }}</h4>

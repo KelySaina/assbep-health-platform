@@ -4,16 +4,7 @@
       <aside class="w-64 bg-sidebar text-white flex flex-col flex-shrink-0">
         <div class="h-16 flex items-center px-6 border-b border-white/10">
           <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            </div>
+            <img src="/logo.jpeg" alt="ASSBEP Logo" class="h-8 w-auto object-contain" />
             <div>
               <span class="text-sm font-headline font-semibold">ASSBEP</span>
               <span class="text-xs text-gray-400 block">Admin Panel</span>

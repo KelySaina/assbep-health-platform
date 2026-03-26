@@ -2,12 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-primary-dark">
     <div class="w-full max-w-md">
       <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </div>
+        <img src="/logo.jpeg" alt="ASSBEP Logo" class="h-16 w-auto object-contain mx-auto mb-4" />
         <h1 class="text-2xl font-headline font-semibold text-white">ASSBEP Admin</h1>
         <p class="text-blue-200 mt-1 text-sm">{{ $t('auth.subtitle') }}</p>
       </div>

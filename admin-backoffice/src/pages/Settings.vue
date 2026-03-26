@@ -204,7 +204,7 @@ const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const settings = reactive({
   siteName: '',
   siteDescription: '',
-  address: ''
+  address: '',
   phone: '',
   email: '',
   officeHours: '',

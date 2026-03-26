@@ -10,6 +10,7 @@ export const useAppStore = defineStore('app', () => {
   const stats = ref<Statistic[]>([])
   const partners = ref<Partner[]>([])
   const resources = ref<Resource[]>([])
+  const siteSettings = ref<Record<string, string>>({})
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -117,6 +118,17 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // Load site settings from API
+  const loadSettings = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
+      const response = await axios.get(`${apiUrl}/settings`)
+      siteSettings.value = response.data
+    } catch (err: any) {
+      console.error('Error loading site settings:', err)
+    }
+  }
+
   // Initialize all data
   const initializeData = async () => {
     await Promise.all([
@@ -125,6 +137,7 @@ export const useAppStore = defineStore('app', () => {
       loadPartners(),
       loadResources(),
       loadStats(),
+      loadSettings(),
     ])
   }
 
@@ -137,6 +150,7 @@ export const useAppStore = defineStore('app', () => {
     stats,
     partners,
     resources,
+    siteSettings,
     loading,
     error,
     loadPrograms,
@@ -144,6 +158,7 @@ export const useAppStore = defineStore('app', () => {
     loadPartners,
     loadResources,
     loadStats,
+    loadSettings,
     initializeData,
     featuredPrograms,
     latestArticles,

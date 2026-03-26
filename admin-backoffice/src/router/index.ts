@@ -29,11 +29,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/ArticlesManager.vue'),
       },
       {
-        path: 'translations',
-        name: 'TranslationsManager',
-        component: () => import('@/pages/TranslationsManager.vue'),
-      },
-      {
         path: 'media',
         name: 'MediaManager',
         component: () => import('@/pages/MediaManager.vue'),

@@ -64,7 +64,7 @@
             >
               {{ locale === 'en' ? 'FR' : 'EN' }}
             </button>
-            <a href="http://localhost:3000" target="_blank" class="px-3 py-1.5 text-xs font-medium text-primary bg-primary-light rounded-lg hover:bg-blue-100 transition-colors">
+            <a :href="publicUrl" target="_blank" class="px-3 py-1.5 text-xs font-medium text-primary bg-primary-light rounded-lg hover:bg-blue-100 transition-colors">
               View Website →
             </a>
           </div>
@@ -168,6 +168,7 @@ const ONBOARDING_AUTO_SHOW_KEY = 'assbep_admin_onboarding_auto_show'
 const route = useRoute()
 const router = useRouter()
 const { locale } = useI18n()
+const publicUrl = import.meta.env.VITE_PUBLIC_URL || '/'
 const authStore = useAuthStore()
 const showOnboarding = ref(false)
 const currentOnboardingStep = ref(0)

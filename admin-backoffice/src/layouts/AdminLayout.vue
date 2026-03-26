@@ -58,12 +58,6 @@
             >
               How To Use
             </button>
-            <button
-              @click="toggleLocale"
-              class="px-3 py-1.5 text-xs font-medium text-gray-600 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              {{ locale === 'en' ? 'FR' : 'EN' }}
-            </button>
             <a :href="publicUrl" target="_blank" class="px-3 py-1.5 text-xs font-medium text-primary bg-primary-light rounded-lg hover:bg-blue-100 transition-colors">
               View Website →
             </a>

@@ -18,13 +18,6 @@
             <label class="label">Site Description</label>
             <textarea class="input" rows="3" v-model="settings.siteDescription"></textarea>
           </div>
-          <div>
-            <label class="label">Default Language</label>
-            <select class="input" v-model="settings.defaultLanguage">
-              <option value="en">English</option>
-              <option value="fr">French</option>
-            </select>
-          </div>
           <button type="button" class="btn-primary" @click="saveSettings('general')" :disabled="loading.general">
             {{ loading.general ? 'Saving...' : $t('actions.save') }}
           </button>
@@ -211,8 +204,7 @@ const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const settings = reactive({
   siteName: '',
   siteDescription: '',
-  defaultLanguage: 'en',
-  address: '',
+  address: ''
   phone: '',
   email: '',
   officeHours: '',
@@ -257,7 +249,6 @@ const loadSettings = async () => {
     // Map API response to settings
     settings.siteName = data.site_name || ''
     settings.siteDescription = data.site_description || ''
-    settings.defaultLanguage = data.default_language || 'en'
     settings.address = data.contact_address || ''
     settings.phone = data.contact_phone || ''
     settings.email = data.contact_email || ''
@@ -296,7 +287,6 @@ const saveSettings = async (section: 'general' | 'contact' | 'seo' | 'social' | 
       data = {
         site_name: settings.siteName,
         site_description: settings.siteDescription,
-        default_language: settings.defaultLanguage,
       }
     } else if (section === 'contact') {
       data = {

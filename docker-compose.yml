@@ -60,7 +60,7 @@ services:
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: assbep-media
       MINIO_USE_SSL: "false"
-      MINIO_PUBLIC_URL: http://localhost:9000
+      MINIO_PUBLIC_URL: https://79.143.185.71.sslip.io/storage
     depends_on:
       postgres:
         condition: service_healthy

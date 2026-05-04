@@ -24,6 +24,7 @@ jobs:
             git pull https://${{ secrets.GH_TOKEN }}@github.com/${{ secrets.GH_REPO }}.git main
             docker compose down
             docker compose up -d --build
+            docker restart assbep-caddy
             docker image prune -f
             echo "✅ Deployment completed!"
             docker compose ps

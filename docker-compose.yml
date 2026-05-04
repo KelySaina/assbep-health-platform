@@ -53,6 +53,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/assbep?schema=public
       JWT_SECRET: assbep-secret-key-change-in-production
       PORT: "4000"
+      CORS_ORIGIN: "https://79.143.185.71.sslip.io,http://79.143.185.71.sslip.io,http://localhost:3000,http://localhost:3001"
       MINIO_ENDPOINT: minio
       MINIO_PORT: "9000"
       MINIO_ACCESS_KEY: minioadmin

@@ -78,17 +78,6 @@
               <p class="text-xs text-gray-500">Write a blog post</p>
             </div>
           </router-link>
-          <router-link to="/translations" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-gray-900">Edit Translations</p>
-              <p class="text-xs text-gray-500">Update site phrases</p>
-            </div>
-          </router-link>
           <router-link to="/media" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
             <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

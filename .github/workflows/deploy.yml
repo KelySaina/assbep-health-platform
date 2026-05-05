@@ -18,7 +18,8 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          password: ${{ secrets.VPS_PASSWORD }}y
+
           script: |
             cd ${{ secrets.PROJECT_PATH }}
             git pull https://${{ secrets.GH_TOKEN }}@github.com/${{ secrets.GH_REPO }}.git main

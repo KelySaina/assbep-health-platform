@@ -62,13 +62,10 @@ export const useAuthStore = defineStore('auth', () => {
         password,
       })
 
-      console.log('Login response:', response.data)
-
       token.value = response.data.access_token
       user.value = mapApiUser(response.data.user)
       if (token.value) {
         localStorage.setItem('admin_token', token.value)
-        console.log('Token saved:', token.value)
       }
     } catch (error) {
       console.error('Login failed:', error)

@@ -78,10 +78,8 @@ export const useAppStore = defineStore('app', () => {
   const loadStats = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || '/api'
-      console.log('Loading stats from:', `${apiUrl}/settings/stats`)
       const response = await axios.get(`${apiUrl}/settings/stats`)
       const data = response.data
-      console.log('Stats data received:', data)
 
       // Map stats with proper labels and icons
       const statConfig: Record<string, { label: string; icon: string }> = {
@@ -108,7 +106,6 @@ export const useAppStore = defineStore('app', () => {
         }
       }
 
-      console.log('Updated stats:', updatedStats)
       if (updatedStats.length > 0) {
         stats.value = updatedStats
       }

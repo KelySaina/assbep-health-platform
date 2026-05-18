@@ -38,8 +38,7 @@ export class ArticlesService {
 
     // Flatten translations for admin UI
     return articles.map(a => {
-      const enTranslation = a.translations.find(t => t.language === 'en');
-      const frTranslation = a.translations.find(t => t.language === 'fr');
+      const enTranslation = a.translations.find(t => t.language === 'en') || a.translations[0];
 
       return {
         id: a.id,
@@ -51,12 +50,9 @@ export class ArticlesService {
         createdAt: a.createdAt,
         updatedAt: a.updatedAt,
         author: a.author?.name || 'ASSBEP',
-        title_en: enTranslation?.title || '',
-        excerpt_en: enTranslation?.excerpt || '',
-        content_en: enTranslation?.content || '',
-        title_fr: frTranslation?.title || '',
-        excerpt_fr: frTranslation?.excerpt || '',
-        content_fr: frTranslation?.content || '',
+        title: enTranslation?.title || '',
+        excerpt: enTranslation?.excerpt || '',
+        content: enTranslation?.content || '',
       };
     });
   }
@@ -80,16 +76,28 @@ export class ArticlesService {
   }
 
   async create(data: any) {
+    const slug = data.slug || this.generateSlug(data.title || 'article');
+
+    const translations = data.translations || [];
+    if (data.title && translations.length === 0) {
+      translations.push({
+        language: 'en',
+        title: data.title,
+        excerpt: data.excerpt || '',
+        content: data.content || '',
+      });
+    }
+
     return this.prisma.article.create({
       data: {
-        slug: data.slug,
+        slug,
         category: data.category,
         image: data.image,
         authorId: data.authorId,
-        published: data.published || false,
-        publishedAt: data.published ? new Date() : null,
+        published: true,
+        publishedAt: new Date(),
         translations: {
-          create: data.translations || [],
+          create: translations,
         },
       },
       include: { translations: true },
@@ -97,7 +105,7 @@ export class ArticlesService {
   }
 
   async update(id: string, data: any) {
-    return this.prisma.article.update({
+    const updated = await this.prisma.article.update({
       where: { id },
       data: {
         slug: data.slug,
@@ -108,6 +116,42 @@ export class ArticlesService {
       },
       include: { translations: true },
     });
+
+    if (data.title !== undefined) {
+      const existingEn = updated.translations.find(t => t.language === 'en');
+      if (existingEn) {
+        await this.prisma.articleTranslation.update({
+          where: { id: existingEn.id },
+          data: {
+            title: data.title,
+            excerpt: data.excerpt || existingEn.excerpt,
+            content: data.content || existingEn.content,
+          },
+        });
+      } else {
+        await this.prisma.articleTranslation.create({
+          data: {
+            articleId: id,
+            language: 'en',
+            title: data.title,
+            excerpt: data.excerpt || '',
+            content: data.content || '',
+          },
+        });
+      }
+    }
+
+    return this.prisma.article.findUnique({
+      where: { id },
+      include: { translations: true },
+    });
+  }
+
+  private generateSlug(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
   }
 
   async remove(id: string) {

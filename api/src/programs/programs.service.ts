@@ -34,8 +34,7 @@ export class ProgramsService {
 
     // Flatten translations for admin UI
     return programs.map(p => {
-      const enTranslation = p.translations.find(t => t.language === 'en');
-      const frTranslation = p.translations.find(t => t.language === 'fr');
+      const enTranslation = p.translations.find(t => t.language === 'en') || p.translations[0];
 
       return {
         id: p.id,
@@ -46,12 +45,9 @@ export class ProgramsService {
         published: p.published,
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
-        title_en: enTranslation?.title || '',
-        description_en: enTranslation?.description || '',
-        content_en: enTranslation?.content || '',
-        title_fr: frTranslation?.title || '',
-        description_fr: frTranslation?.description || '',
-        content_fr: frTranslation?.content || '',
+        title: enTranslation?.title || '',
+        description: enTranslation?.description || '',
+        content: enTranslation?.content || '',
       };
     });
   }
@@ -79,15 +75,29 @@ export class ProgramsService {
   }
 
   async create(data: any) {
+    // Generate slug from title if not provided
+    const slug = data.slug || this.generateSlug(data.title || 'program');
+
+    // Support both flat format (title, description) and translations array
+    const translations = data.translations || [];
+    if (data.title && translations.length === 0) {
+      translations.push({
+        language: 'en',
+        title: data.title,
+        description: data.description || '',
+        content: data.content || '',
+      });
+    }
+
     return this.prisma.program.create({
       data: {
-        slug: data.slug,
+        slug,
         category: data.category,
         image: data.image,
         order: data.order || 0,
         published: data.published || false,
         translations: {
-          create: data.translations || [],
+          create: translations,
         },
       },
       include: { translations: true },
@@ -95,7 +105,8 @@ export class ProgramsService {
   }
 
   async update(id: string, data: any) {
-    return this.prisma.program.update({
+    // Update the program fields
+    const updated = await this.prisma.program.update({
       where: { id },
       data: {
         slug: data.slug,
@@ -106,6 +117,43 @@ export class ProgramsService {
       },
       include: { translations: true },
     });
+
+    // If flat title/description provided, upsert the English translation
+    if (data.title !== undefined) {
+      const existingEn = updated.translations.find(t => t.language === 'en');
+      if (existingEn) {
+        await this.prisma.programTranslation.update({
+          where: { id: existingEn.id },
+          data: {
+            title: data.title,
+            description: data.description || existingEn.description,
+            content: data.content || existingEn.content,
+          },
+        });
+      } else {
+        await this.prisma.programTranslation.create({
+          data: {
+            programId: id,
+            language: 'en',
+            title: data.title,
+            description: data.description || '',
+            content: data.content || '',
+          },
+        });
+      }
+    }
+
+    return this.prisma.program.findUnique({
+      where: { id },
+      include: { translations: true },
+    });
+  }
+
+  private generateSlug(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
   }
 
   async remove(id: string) {

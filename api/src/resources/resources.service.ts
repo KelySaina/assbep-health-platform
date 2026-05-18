@@ -42,8 +42,7 @@ export class ResourcesService {
     });
 
     return resources.map((resource) => {
-      const enTranslation = resource.translations.find((translation) => translation.language === 'en');
-      const frTranslation = resource.translations.find((translation) => translation.language === 'fr');
+      const enTranslation = resource.translations.find((t) => t.language === 'en') || resource.translations[0];
 
       return {
         id: resource.id,
@@ -53,29 +52,44 @@ export class ResourcesService {
         order: resource.order,
         createdAt: resource.createdAt,
         updatedAt: resource.updatedAt,
-        title_en: enTranslation?.title || '',
-        description_en: enTranslation?.description || '',
-        title_fr: frTranslation?.title || '',
-        description_fr: frTranslation?.description || '',
+        title: enTranslation?.title || '',
+        description: enTranslation?.description || '',
       };
     });
   }
 
   async create(data: any) {
+    const translations = data.translations || [];
+    if (data.title && translations.length === 0) {
+      translations.push({
+        language: 'en',
+        title: data.title,
+        description: data.description || '',
+      });
+    }
+
     return this.prisma.resource.create({
       data: {
         type: data.type,
         fileUrl: data.fileUrl,
         published: data.published || false,
         order: data.order || 0,
-        translations: { create: data.translations || [] },
+        translations: { create: translations },
       },
       include: { translations: true },
     });
   }
 
   async update(id: string, data: any) {
+    // Build translations array from flat or structured data
     const translations = Array.isArray(data.translations) ? data.translations : [];
+    if (data.title && translations.length === 0) {
+      translations.push({
+        language: 'en',
+        title: data.title,
+        description: data.description || '',
+      });
+    }
 
     return this.prisma.resource.update({
       where: { id },

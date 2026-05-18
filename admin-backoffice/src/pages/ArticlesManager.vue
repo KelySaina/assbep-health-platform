@@ -247,7 +247,6 @@ const saveArticle = async () => {
     toast.error('Failed to save article')
   }
 }
-}
 
 const deleteArticle = (id: string) => {
   articleToDelete.value = id

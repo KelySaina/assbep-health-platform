@@ -13,8 +13,7 @@
           </div>
         </div>
         <div class="mt-3 flex items-center text-xs">
-          <span class="text-green-500 font-medium">↑ {{ stat.change }}%</span>
-          <span class="text-gray-400 ml-1">vs last month</span>
+          <span class="text-gray-400">{{ stat.value }} total</span>
         </div>
       </div>
     </div>

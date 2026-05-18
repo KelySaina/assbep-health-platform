@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.partners') }}</h2>
+        <h2 class="text-2xl font-headline font-semibold">Partners</h2>
         <p class="text-sm text-gray-500 mt-1">Manage partner organizations</p>
       </div>
       <div class="flex space-x-2">
@@ -87,33 +87,33 @@
     <div v-if="showForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl max-w-md w-full p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-headline font-semibold">Add Partner</h3>
-          <button @click="showForm = false" class="text-gray-400 hover:text-gray-600">
+          <h3 class="text-xl font-headline font-semibold">{{ editingPartner ? 'Edit Partner' : 'Add Partner' }}</h3>
+          <button @click="closeForm" class="text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <form @submit.prevent="showForm = false" class="space-y-4">
+        <form @submit.prevent="savePartner" class="space-y-4">
           <div>
             <label class="label">Name</label>
-            <input type="text" class="input" placeholder="Organization name" />
+            <input type="text" class="input" placeholder="Organization name" v-model="formData.name" required />
           </div>
           <div>
-            <label class="label">Logo URL</label>
-            <input type="text" class="input" placeholder="https://..." />
+            <label class="label">Logo</label>
+            <MediaPicker v-model="formData.logo" placeholder="Logo URL or browse media" />
           </div>
           <div>
             <label class="label">Website</label>
-            <input type="url" class="input" placeholder="https://..." />
+            <input type="url" class="input" placeholder="https://..." v-model="formData.website" />
           </div>
           <div>
             <label class="label">Display Order</label>
-            <input type="number" class="input" value="1" />
+            <input type="number" class="input" v-model="formData.order" />
           </div>
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="showForm = false" class="btn-secondary">{{ $t('actions.cancel') }}</button>
-            <button type="submit" class="btn-primary">{{ $t('actions.save') }}</button>
+            <button type="button" @click="closeForm" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">{{ editingPartner ? 'Update' : 'Save' }}</button>
           </div>
         </form>
       </div>
@@ -125,6 +125,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
+import MediaPicker from '@/components/MediaPicker.vue'
 
 const toast = useToast()
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
@@ -133,6 +134,13 @@ const showDeleteModal = ref(false)
 const partnerToDelete = ref<string | null>(null)
 const editingPartner = ref<any>(null)
 const selectedPartners = ref<string[]>([])
+
+const formData = ref({
+  name: '',
+  logo: '',
+  website: '',
+  order: 1
+})
 
 const partners = ref<any[]>([])
 
@@ -145,9 +153,33 @@ const loadPartners = async () => {
   }
 }
 
+const closeForm = () => {
+  showForm.value = false
+  editingPartner.value = null
+  formData.value = { name: '', logo: '', website: '', order: 1 }
+}
+
 const editPartner = (partner: any) => {
-  editingPartner.value = { ...partner }
+  editingPartner.value = partner
+  formData.value = { name: partner.name, logo: partner.logo, website: partner.website || '', order: partner.order || 1 }
   showForm.value = true
+}
+
+const savePartner = async () => {
+  try {
+    const headers = { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }
+    if (editingPartner.value) {
+      await axios.put(`${apiUrl}/partners/${editingPartner.value.id}`, formData.value, { headers })
+      toast.success('Partner updated successfully!')
+    } else {
+      await axios.post(`${apiUrl}/partners`, formData.value, { headers })
+      toast.success('Partner created successfully!')
+    }
+    closeForm()
+    loadPartners()
+  } catch (error) {
+    toast.error('Failed to save partner')
+  }
 }
 
 const deletePartner = (id: string) => {

@@ -99,4 +99,38 @@ export class AuthService {
 
     return { message: 'Password changed successfully' };
   }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Don't reveal whether email exists
+      return { message: 'If this email exists, a reset has been processed.' };
+    }
+
+    // Generate a temporary password
+    const tempPassword = this.generateTempPassword();
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+    });
+
+    // In production, send an email. For now, log it.
+    console.log(`[FORGOT PASSWORD] Temporary password for ${email}: ${tempPassword}`);
+
+    return { message: 'If this email exists, a reset has been processed.' };
+  }
+
+  private generateTempPassword(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const specials = '@$!%*?&';
+    let password = '';
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    password += specials.charAt(Math.floor(Math.random() * specials.length));
+    password += 'A1'; // ensure uppercase + number
+    return password;
+  }
 }

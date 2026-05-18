@@ -3,21 +3,21 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.programs') }}</h2>
+        <h2 class="text-2xl font-headline font-semibold">Programs</h2>
         <p class="text-sm text-gray-500 mt-1">Manage health programs and services</p>
       </div>
-      <button @click="showForm = true" class="btn-primary">
+      <button @click="openCreateForm" class="btn-primary">
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
-        {{ $t('actions.create') }} Program
+        New Program
       </button>
     </div>
 
     <!-- Programs Table -->
     <div class="card">
       <div class="flex items-center justify-between mb-4">
-        <input type="text" v-model="searchQuery" :placeholder="$t('actions.search')" class="input max-w-xs" />
+        <input type="text" v-model="searchQuery" placeholder="Search programs..." class="input max-w-xs" />
         <button
           v-if="selectedPrograms.length > 0"
           @click="bulkDelete"
@@ -42,7 +42,7 @@
                   class="rounded border-gray-300 text-primary focus:ring-primary"
                 />
               </th>
-              <th class="text-left py-3 px-3 text-gray-500 font-medium">Title (EN / FR)</th>
+              <th class="text-left py-3 px-3 text-gray-500 font-medium">Title</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Category</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Order</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Status</th>
@@ -61,10 +61,9 @@
               </td>
               <td class="py-3 px-3">
                 <div class="flex items-center space-x-3">
-                  <img :src="program.image" :alt="program.title_en || program.title_fr" class="w-10 h-10 rounded-lg object-cover" />
+                  <img :src="program.image" :alt="program.title" class="w-10 h-10 rounded-lg object-cover" />
                   <div>
-                    <span class="font-medium text-gray-900 block">{{ program.title_en }}</span>
-                    <span class="text-xs text-gray-500">{{ program.title_fr }}</span>
+                    <span class="font-medium text-gray-900 block">{{ program.title }}</span>
                   </div>
                 </div>
               </td>
@@ -79,8 +78,8 @@
                 </span>
               </td>
               <td class="py-3 px-3 text-right">
-                <button @click="editProgram(program)" class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>
-                <button @click="deleteProgram(program.id)" class="text-red-500 hover:underline text-xs">{{ $t('actions.delete') }}</button>
+                <button @click="editProgram(program)" class="text-primary hover:underline text-xs mr-3">Edit</button>
+                <button @click="deleteProgram(program.id)" class="text-red-500 hover:underline text-xs">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -114,22 +113,22 @@
     <div v-if="showForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-headline font-semibold">New Program</h3>
-          <button @click="showForm = false" class="text-gray-400 hover:text-gray-600">
+          <h3 class="text-xl font-headline font-semibold">{{ editingProgram ? 'Edit Program' : 'New Program' }}</h3>
+          <button @click="closeForm" class="text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <form @submit.prevent="showForm = false" class="space-y-4">
+        <form @submit.prevent="saveProgram" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="label">Title</label>
-              <input type="text" class="input" placeholder="Program title" />
+              <input type="text" class="input" placeholder="Program title" v-model="formData.title" required />
             </div>
             <div>
               <label class="label">Category</label>
-              <select class="input">
+              <select class="input" v-model="formData.category">
                 <option>maternal</option>
                 <option>vaccination</option>
                 <option>nutrition</option>
@@ -140,32 +139,25 @@
           </div>
           <div>
             <label class="label">Description</label>
-            <textarea class="input" rows="4" placeholder="Program description..."></textarea>
+            <textarea class="input" rows="4" placeholder="Program description..." v-model="formData.description"></textarea>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="label">Language</label>
-              <select class="input">
-                <option value="en">English</option>
-                <option value="fr">French</option>
-              </select>
+              <label class="label">Image</label>
+              <MediaPicker v-model="formData.image" placeholder="Image URL or browse media" />
             </div>
             <div>
               <label class="label">Order</label>
-              <input type="number" class="input" value="1" />
+              <input type="number" class="input" v-model="formData.order" />
             </div>
           </div>
-          <div>
-            <label class="label">Image URL</label>
-            <input type="text" class="input" placeholder="https://..." />
-          </div>
           <div class="flex items-center space-x-2">
-            <input type="checkbox" id="published" class="rounded border-gray-300 text-primary" />
+            <input type="checkbox" id="published" class="rounded border-gray-300 text-primary" v-model="formData.published" />
             <label for="published" class="text-sm text-gray-700">Published</label>
           </div>
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="showForm = false" class="btn-secondary">{{ $t('actions.cancel') }}</button>
-            <button type="submit" class="btn-primary">{{ $t('actions.save') }}</button>
+            <button type="button" @click="closeForm" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">{{ editingProgram ? 'Update' : 'Save' }}</button>
           </div>
         </form>
       </div>
@@ -177,16 +169,25 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
+import MediaPicker from '@/components/MediaPicker.vue'
 
 const toast = useToast()
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const showForm = ref(false)
 const searchQuery = ref('')
-const filterLanguage = ref('')
 const editingProgram = ref<any>(null)
 const showDeleteModal = ref(false)
 const programToDelete = ref<string | null>(null)
 const selectedPrograms = ref<string[]>([])
+
+const formData = ref({
+  title: '',
+  description: '',
+  category: 'maternal',
+  image: '',
+  order: 1,
+  published: false
+})
 
 const programs = ref<any[]>([])
 
@@ -203,17 +204,54 @@ const loadPrograms = async () => {
   }
 }
 
+const openCreateForm = () => {
+  editingProgram.value = null
+  formData.value = { title: '', description: '', category: 'maternal', image: '', order: 1, published: false }
+  showForm.value = true
+}
+
+const closeForm = () => {
+  showForm.value = false
+  editingProgram.value = null
+  formData.value = { title: '', description: '', category: 'maternal', image: '', order: 1, published: false }
+}
+
+const editProgram = (program: any) => {
+  editingProgram.value = program
+  formData.value = {
+    title: program.title || '',
+    description: program.description || '',
+    category: program.category || 'maternal',
+    image: program.image || '',
+    order: program.order || 1,
+    published: program.published || false
+  }
+  showForm.value = true
+}
+
+const saveProgram = async () => {
+  try {
+    const headers = { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }
+    if (editingProgram.value) {
+      await axios.put(`${apiUrl}/programs/${editingProgram.value.id}`, formData.value, { headers })
+      toast.success('Program updated successfully!')
+    } else {
+      await axios.post(`${apiUrl}/programs`, formData.value, { headers })
+      toast.success('Program created successfully!')
+    }
+    closeForm()
+    loadPrograms()
+  } catch (error) {
+    toast.error('Failed to save program')
+  }
+}
+
 const toggleSelectAll = () => {
   if (selectedPrograms.value.length === filteredPrograms.value.length) {
     selectedPrograms.value = []
   } else {
     selectedPrograms.value = filteredPrograms.value.map(p => p.id)
   }
-}
-
-const editProgram = (program: any) => {
-  editingProgram.value = { ...program }
-  showForm.value = true
 }
 
 const deleteProgram = (id: string) => {
@@ -260,11 +298,8 @@ const confirmDelete = async () => {
 
 const filteredPrograms = computed(() => {
   return programs.value.filter((p) => {
-    const titleEn = p.title_en || ''
-    const titleFr = p.title_fr || ''
-    const matchesSearch = titleEn.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                         titleFr.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchesSearch
+    const title = p.title || ''
+    return title.toLowerCase().includes(searchQuery.value.toLowerCase())
   })
 })
 

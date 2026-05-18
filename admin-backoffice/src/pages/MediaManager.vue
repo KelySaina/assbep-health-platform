@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.media') }}</h2>
+        <h2 class="text-2xl font-headline font-semibold">Media</h2>
         <p class="text-sm text-gray-500 mt-1">Upload and manage images, documents, and videos</p>
       </div>
       <div class="flex space-x-2">
@@ -20,7 +20,7 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
-          {{ $t('actions.upload') }}
+          Upload
         </button>
       </div>
     </div>
@@ -216,9 +216,9 @@
           </div>
         </div>
         <div class="flex justify-end space-x-3 pt-4">
-          <button type="button" @click="closeUploadModal" class="btn-secondary">{{ $t('actions.cancel') }}</button>
+          <button type="button" @click="closeUploadModal" class="btn-secondary">Cancel</button>
           <button type="button" @click="handleUpload" :disabled="!selectedFile || isUploading" class="btn-primary">
-            {{ isUploading ? 'Uploading...' : $t('actions.upload') }}
+            {{ isUploading ? 'Uploading...' : 'Upload' }}
           </button>
         </div>
       </div>

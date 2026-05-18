@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.users') }}</h2>
+        <h2 class="text-2xl font-headline font-semibold">Users</h2>
         <p class="text-sm text-gray-500 mt-1">Manage admin users and their roles</p>
       </div>
       <button @click="showForm = true" class="btn-primary">
@@ -22,7 +22,7 @@
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Email</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Role</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Position</th>
-              <th class="text-center py-3 px-3 text-gray-500 font-medium">Team</th>
+              <th class="text-center py-3 px-3 text-gray-500 font-medium">Show on Website</th>
               <th class="text-right py-3 px-3 text-gray-500 font-medium">Actions</th>
             </tr>
           </thead>
@@ -49,16 +49,22 @@
                 {{ user.position || '-' }}
               </td>
               <td class="py-3 px-3 text-center">
-                <span v-if="user.showInTeam" class="inline-flex items-center justify-center w-6 h-6 bg-green-100 rounded-full">
-                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </span>
-                <span v-else class="text-gray-300">-</span>
+                <button @click="toggleShowInTeam(user)" class="focus:outline-none" :title="user.showInTeam ? 'Visible on website' : 'Hidden from website'">
+                  <span v-if="user.showInTeam" class="inline-flex items-center justify-center w-8 h-8 bg-green-100 rounded-full hover:bg-green-200 transition-colors">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  <span v-else class="inline-flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </span>
+                </button>
               </td>
               <td class="py-3 px-3 text-right">
-                <button @click="editUser(user)" class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>
-                <button @click="deleteUser(user.id)" class="text-red-500 hover:underline text-xs">{{ $t('actions.delete') }}</button>
+                <button @click="editUser(user)" class="text-primary hover:underline text-xs mr-3">Edit</button>
+                <button @click="deleteUser(user.id)" class="text-red-500 hover:underline text-xs">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -112,12 +118,11 @@
             <select v-model="formData.role" class="input">
               <option value="SUPER_ADMIN">Super Admin</option>
               <option value="EDITOR">Editor</option>
-              <option value="TRANSLATOR">Translator</option>
             </select>
           </div>
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="closeForm" class="btn-secondary">{{ $t('actions.cancel') }}</button>
-            <button type="submit" class="btn-primary">{{ $t('actions.save') }}</button>
+            <button type="button" @click="closeForm" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Save</button>
           </div>
         </form>
       </div>
@@ -246,6 +251,21 @@ const closeForm = () => {
     email: '',
     password: '',
     role: 'EDITOR'
+  }
+}
+
+const toggleShowInTeam = async (user: any) => {
+  try {
+    const newValue = !user.showInTeam
+    await axios.put(`${apiUrl}/users/${user.id}`, { showInTeam: newValue }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
+      }
+    })
+    user.showInTeam = newValue
+    toast.success(newValue ? 'User will be shown on the website' : 'User hidden from website')
+  } catch (error) {
+    toast.error('Failed to update visibility')
   }
 }
 

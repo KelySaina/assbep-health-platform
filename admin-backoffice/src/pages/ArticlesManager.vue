@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.blog') }}</h2>
+        <h2 class="text-2xl font-headline font-semibold">Blog Articles</h2>
         <p class="text-sm text-gray-500 mt-1">Manage blog articles and news posts</p>
       </div>
       <button @click="showForm = true" class="btn-primary">
@@ -15,7 +15,7 @@
 
     <div class="card">
       <div class="flex items-center justify-between mb-4">
-        <input type="text" v-model="searchQuery" :placeholder="$t('actions.search')" class="input max-w-xs" />
+        <input type="text" v-model="searchQuery" placeholder="Search articles..." class="input max-w-xs" />
         <div class="flex space-x-2">
           <button
             v-if="selectedArticles.length > 0"
@@ -34,11 +34,6 @@
             <option value="events">Events</option>
             <option value="reports">Reports</option>
           </select>
-          <select v-model="filterLanguage" class="input max-w-[120px]">
-            <option value="">All Languages</option>
-            <option value="en">English</option>
-            <option value="fr">French</option>
-          </select>
         </div>
       </div>
 
@@ -54,7 +49,7 @@
                   class="rounded border-gray-300 text-primary focus:ring-primary"
                 />
               </th>
-              <th class="text-left py-3 px-3 text-gray-500 font-medium">Title (EN / FR)</th>
+              <th class="text-left py-3 px-3 text-gray-500 font-medium">Title</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Author</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Category</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Date</th>
@@ -73,10 +68,9 @@
               </td>
               <td class="py-3 px-3">
                 <div class="flex items-center space-x-3">
-                  <img :src="article.image" :alt="article.title_en || article.title_fr" class="w-10 h-10 rounded-lg object-cover" />
+                  <img :src="article.image" :alt="article.title" class="w-10 h-10 rounded-lg object-cover" />
                   <div>
-                    <span class="font-medium text-gray-900 block">{{ article.title_en }}</span>
-                    <span class="text-xs text-gray-500">{{ article.title_fr }}</span>
+                    <span class="font-medium text-gray-900 block">{{ article.title }}</span>
                   </div>
                 </div>
               </td>
@@ -86,8 +80,8 @@
               </td>
               <td class="py-3 px-3 text-gray-500">{{ new Date(article.publishedAt || article.createdAt).toLocaleDateString() }}</td>
               <td class="py-3 px-3 text-right">
-                <button @click="editArticle(article)" class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>
-                <button @click="deleteArticle(article.id)" class="text-red-500 hover:underline text-xs">{{ $t('actions.delete') }}</button>
+                <button @click="editArticle(article)" class="text-primary hover:underline text-xs mr-3">Edit</button>
+                <button @click="deleteArticle(article.id)" class="text-red-500 hover:underline text-xs">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -121,40 +115,40 @@
     <div v-if="showForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-headline font-semibold">New Article</h3>
-          <button @click="showForm = false" class="text-gray-400 hover:text-gray-600">
+          <h3 class="text-xl font-headline font-semibold">{{ editingArticle ? 'Edit Article' : 'New Article' }}</h3>
+          <button @click="closeForm" class="text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <form @submit.prevent="showForm = false" class="space-y-4">
+        <form @submit.prevent="saveArticle" class="space-y-4">
           <div>
             <label class="label">Title</label>
-            <input type="text" class="input" placeholder="Article title" />
+            <input type="text" class="input" placeholder="Article title" v-model="formData.title" required />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="label">Slug</label>
-              <input type="text" class="input" placeholder="article-slug" />
+              <input type="text" class="input" placeholder="article-slug" v-model="formData.slug" />
             </div>
             <div>
               <label class="label">Author</label>
-              <input type="text" class="input" placeholder="Author name" />
+              <input type="text" class="input" placeholder="Author name" v-model="formData.author" />
             </div>
           </div>
           <div>
             <label class="label">Excerpt</label>
-            <textarea class="input" rows="2" placeholder="Short excerpt..."></textarea>
+            <textarea class="input" rows="2" placeholder="Short excerpt..." v-model="formData.excerpt"></textarea>
           </div>
           <div>
             <label class="label">Content</label>
-            <textarea class="input" rows="8" placeholder="Full article content (HTML supported)..."></textarea>
+            <textarea class="input" rows="8" placeholder="Full article content (HTML supported)..." v-model="formData.content"></textarea>
           </div>
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="label">Category</label>
-              <select class="input">
+              <select class="input" v-model="formData.category">
                 <option value="health_tips">Health Tips</option>
                 <option value="community_news">Community News</option>
                 <option value="events">Events</option>
@@ -162,20 +156,13 @@
               </select>
             </div>
             <div>
-              <label class="label">Language</label>
-              <select class="input">
-                <option value="en">English</option>
-                <option value="fr">French</option>
-              </select>
-            </div>
-            <div>
               <label class="label">Featured Image</label>
-              <input type="text" class="input" placeholder="Image URL" />
+              <MediaPicker v-model="formData.image" placeholder="Image URL or browse media" />
             </div>
           </div>
           <div class="flex justify-end space-x-3 pt-4">
-            <button type="button" @click="showForm = false" class="btn-secondary">{{ $t('actions.cancel') }}</button>
-            <button type="submit" class="btn-primary">{{ $t('actions.publish') }}</button>
+            <button type="button" @click="closeForm" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">{{ editingArticle ? 'Update' : 'Publish' }}</button>
           </div>
         </form>
       </div>
@@ -187,17 +174,27 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
+import MediaPicker from '@/components/MediaPicker.vue'
 
 const toast = useToast()
 const apiUrl = import.meta.env.VITE_API_URL || '/api'
 const showForm = ref(false)
 const searchQuery = ref('')
 const filterCategory = ref('')
-const filterLanguage = ref('')
 const editingArticle = ref<any>(null)
 const showDeleteModal = ref(false)
 const articleToDelete = ref<string | null>(null)
 const selectedArticles = ref<string[]>([])
+
+const formData = ref({
+  title: '',
+  slug: '',
+  author: '',
+  excerpt: '',
+  content: '',
+  category: 'health_tips',
+  image: ''
+})
 
 const articles = ref<any[]>([])
 
@@ -214,17 +211,42 @@ const loadArticles = async () => {
   }
 }
 
-const toggleSelectAll = () => {
-  if (selectedArticles.value.length === filteredArticles.value.length) {
-    selectedArticles.value = []
-  } else {
-    selectedArticles.value = filteredArticles.value.map(a => a.id)
-  }
+const closeForm = () => {
+  showForm.value = false
+  editingArticle.value = null
+  formData.value = { title: '', slug: '', author: '', excerpt: '', content: '', category: 'health_tips', image: '' }
 }
 
 const editArticle = (article: any) => {
-  editingArticle.value = { ...article }
+  editingArticle.value = article
+  formData.value = {
+    title: article.title || '',
+    slug: article.slug || '',
+    author: article.author || '',
+    excerpt: article.excerpt || '',
+    content: article.content || '',
+    category: article.category || 'health_tips',
+    image: article.image || ''
+  }
   showForm.value = true
+}
+
+const saveArticle = async () => {
+  try {
+    const headers = { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }
+    if (editingArticle.value) {
+      await axios.put(`${apiUrl}/articles/${editingArticle.value.id}`, formData.value, { headers })
+      toast.success('Article updated successfully!')
+    } else {
+      await axios.post(`${apiUrl}/articles`, formData.value, { headers })
+      toast.success('Article published successfully!')
+    }
+    closeForm()
+    loadArticles()
+  } catch (error) {
+    toast.error('Failed to save article')
+  }
+}
 }
 
 const deleteArticle = (id: string) => {
@@ -271,14 +293,20 @@ const confirmDelete = async () => {
 
 const filteredArticles = computed(() => {
   return articles.value.filter((a) => {
-    const titleEn = a.title_en || ''
-    const titleFr = a.title_fr || ''
-    const matchesSearch = titleEn.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                         titleFr.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const title = a.title || ''
+    const matchesSearch = title.toLowerCase().includes(searchQuery.value.toLowerCase())
     const matchesCategory = !filterCategory.value || a.category === filterCategory.value
     return matchesSearch && matchesCategory
   })
 })
+
+const toggleSelectAll = () => {
+  if (selectedArticles.value.length === filteredArticles.value.length) {
+    selectedArticles.value = []
+  } else {
+    selectedArticles.value = filteredArticles.value.map(a => a.id)
+  }
+}
 
 onMounted(() => {
   loadArticles()

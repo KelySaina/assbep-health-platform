@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-headline font-semibold">{{ $t('admin.resources') }}</h2>
+        <h2 class="text-2xl font-headline font-semibold">Resources</h2>
         <p class="text-sm text-gray-500 mt-1">Manage downloadable guides, videos, and documents shown on the public website.</p>
       </div>
       <button @click="openCreateForm" class="btn-primary">
@@ -16,7 +16,7 @@
     <div class="card">
       <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-          <input v-model="searchQuery" type="text" :placeholder="$t('actions.search')" class="input max-w-xs" />
+          <input v-model="searchQuery" type="text" placeholder="Search resources..." class="input max-w-xs" />
           <select v-model="filterType" class="input max-w-[180px]">
             <option value="">All Types</option>
             <option value="guide">Guides</option>
@@ -51,7 +51,7 @@
                   @change="toggleSelectAllFiltered"
                 />
               </th>
-              <th class="text-left py-3 px-3 text-gray-500 font-medium">Title (EN / FR)</th>
+              <th class="text-left py-3 px-3 text-gray-500 font-medium">Title</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Type</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">File</th>
               <th class="text-left py-3 px-3 text-gray-500 font-medium">Order</th>
@@ -71,8 +71,7 @@
               </td>
               <td class="py-3 px-3">
                 <div>
-                  <p class="font-medium text-gray-900">{{ resource.title_en || 'Untitled resource' }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ resource.title_fr || 'No French title' }}</p>
+                  <p class="font-medium text-gray-900">{{ resource.title || 'Untitled resource' }}</p>
                 </div>
               </td>
               <td class="py-3 px-3">
@@ -99,8 +98,8 @@
                 </span>
               </td>
               <td class="py-3 px-3 text-right">
-                <button @click="editResource(resource)" class="text-primary hover:underline text-xs mr-3">{{ $t('actions.edit') }}</button>
-                <button @click="deleteResource(resource.id)" class="text-red-500 hover:underline text-xs">{{ $t('actions.delete') }}</button>
+                <button @click="editResource(resource)" class="text-primary hover:underline text-xs mr-3">Edit</button>
+                <button @click="deleteResource(resource.id)" class="text-red-500 hover:underline text-xs">Delete</button>
               </td>
             </tr>
           </tbody>
@@ -143,7 +142,7 @@
         <div class="flex items-center justify-between mb-6">
           <div>
             <h3 class="text-xl font-headline font-semibold">{{ editingResource ? 'Edit Resource' : 'New Resource' }}</h3>
-            <p class="text-sm text-gray-500 mt-1">Provide English and French titles so the public website can display this resource cleanly.</p>
+            <p class="text-sm text-gray-500 mt-1">Provide title and description for this resource.</p>
           </div>
           <button @click="closeForm" class="text-gray-400 hover:text-gray-600">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,36 +193,21 @@
             <p class="text-xs text-gray-500 mt-1">Uploaded files are stored in Media Manager automatically, then linked here.</p>
           </div>
 
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="rounded-2xl border border-gray-200 p-4 space-y-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">English</p>
-              <div>
-                <label class="label">Title</label>
-                <input v-model="formData.titleEn" type="text" class="input" required />
-              </div>
-              <div>
-                <label class="label">Description</label>
-                <textarea v-model="formData.descriptionEn" rows="4" class="input" required></textarea>
-              </div>
+          <div class="space-y-3">
+            <div>
+              <label class="label">Title</label>
+              <input v-model="formData.title" type="text" class="input" required />
             </div>
-
-            <div class="rounded-2xl border border-gray-200 p-4 space-y-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">French</p>
-              <div>
-                <label class="label">Title</label>
-                <input v-model="formData.titleFr" type="text" class="input" required />
-              </div>
-              <div>
-                <label class="label">Description</label>
-                <textarea v-model="formData.descriptionFr" rows="4" class="input" required></textarea>
-              </div>
+            <div>
+              <label class="label">Description</label>
+              <textarea v-model="formData.description" rows="4" class="input" required></textarea>
             </div>
           </div>
 
           <div class="flex justify-end space-x-3 pt-2">
-            <button type="button" @click="closeForm" class="btn-secondary">{{ $t('actions.cancel') }}</button>
+            <button type="button" @click="closeForm" class="btn-secondary">Cancel</button>
             <button type="submit" class="btn-primary" :disabled="saving">
-              {{ saving ? 'Saving...' : $t('actions.save') }}
+              {{ saving ? 'Saving...' : 'Save' }}
             </button>
           </div>
         </form>
@@ -316,10 +300,8 @@ type ResourceItem = {
   fileUrl: string
   published: boolean
   order: number
-  title_en: string
-  description_en: string
-  title_fr: string
-  description_fr: string
+  title: string
+  description: string
 }
 
 type MediaItem = {
@@ -352,10 +334,8 @@ const formData = reactive({
   fileUrl: '',
   order: 0,
   published: false,
-  titleEn: '',
-  descriptionEn: '',
-  titleFr: '',
-  descriptionFr: '',
+  title: '',
+  description: '',
 })
 
 const authHeaders = () => ({
@@ -409,10 +389,8 @@ const resetForm = () => {
   formData.fileUrl = ''
   formData.order = 0
   formData.published = false
-  formData.titleEn = ''
-  formData.descriptionEn = ''
-  formData.titleFr = ''
-  formData.descriptionFr = ''
+  formData.title = ''
+  formData.description = ''
 }
 
 const openCreateForm = () => {
@@ -427,10 +405,8 @@ const editResource = (resource: ResourceItem) => {
   formData.fileUrl = resource.fileUrl || ''
   formData.order = resource.order || 0
   formData.published = resource.published
-  formData.titleEn = resource.title_en || ''
-  formData.descriptionEn = resource.description_en || ''
-  formData.titleFr = resource.title_fr || ''
-  formData.descriptionFr = resource.description_fr || ''
+  formData.title = resource.title || ''
+  formData.description = resource.description || ''
   showForm.value = true
 }
 
@@ -472,7 +448,7 @@ const uploadResourceFile = async (event: Event) => {
   const uploadPayload = new FormData()
   uploadPayload.append('file', file)
   uploadPayload.append('type', detectFileType(file))
-  uploadPayload.append('alt_text', formData.titleEn || file.name.replace(/\.[^/.]+$/, ''))
+  uploadPayload.append('alt_text', formData.title || file.name.replace(/\.[^/.]+$/, ''))
 
   try {
     const response = await axios.post(`${apiUrl}/media/upload`, uploadPayload, {
@@ -536,18 +512,8 @@ const saveResource = async () => {
     fileUrl: formData.fileUrl,
     order: formData.order,
     published: formData.published,
-    translations: [
-      {
-        language: 'en',
-        title: formData.titleEn,
-        description: formData.descriptionEn,
-      },
-      {
-        language: 'fr',
-        title: formData.titleFr,
-        description: formData.descriptionFr,
-      },
-    ],
+    title: formData.title,
+    description: formData.description,
   }
 
   try {
@@ -614,10 +580,8 @@ const filteredResources = computed(() => {
     const matchesType = !filterType.value || resource.type === filterType.value
     const matchesSearch =
       !query ||
-      resource.title_en.toLowerCase().includes(query) ||
-      resource.title_fr.toLowerCase().includes(query) ||
-      resource.description_en.toLowerCase().includes(query) ||
-      resource.description_fr.toLowerCase().includes(query)
+      (resource.title || '').toLowerCase().includes(query) ||
+      (resource.description || '').toLowerCase().includes(query)
 
     return matchesType && matchesSearch
   })

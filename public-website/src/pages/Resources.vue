@@ -49,12 +49,12 @@
               <div class="flex-1">
                 <h3 class="font-headline font-semibold text-gray-900">{{ resource.title }}</h3>
                 <p class="text-sm text-neutral mt-1">{{ resource.description }}</p>
-                <button class="mt-3 text-primary text-sm font-medium flex items-center hover:underline">
+                <a :href="resource.file" target="_blank" rel="noopener" class="mt-3 text-primary text-sm font-medium flex items-center hover:underline">
                   {{ resource.type === 'video' ? $t('resources.watch') : $t('resources.download') }}
                   <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                </button>
+                </a>
               </div>
             </div>
           </div>

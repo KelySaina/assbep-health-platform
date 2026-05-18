@@ -26,6 +26,15 @@
               <p class="text-neutral leading-relaxed text-lg">{{ program?.description }}</p>
               <div v-if="program?.content" class="mt-4 text-neutral leading-relaxed" v-html="program.content"></div>
             </div>
+            <!-- Photo Gallery -->
+            <div v-if="program?.images && program.images.length > 0" class="mt-10">
+              <h3 class="font-headline font-semibold text-xl mb-4">Gallery</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div v-for="(img, index) in program.images" :key="index" class="aspect-square rounded-xl overflow-hidden hover:opacity-90 transition-opacity">
+                  <img :src="img" class="w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
           </div>
           <div class="space-y-6">
             <div class="card">

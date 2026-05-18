@@ -104,16 +104,9 @@ const article = computed(() =>
 
 const currentUrl = computed(() => window.location.href)
 
-// Extract image URLs from content HTML for a gallery section
+// Gallery images from dedicated field
 const galleryImages = computed(() => {
-  if (!article.value?.content) return []
-  const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g
-  const images: string[] = []
-  let match
-  while ((match = imgRegex.exec(article.value.content)) !== null) {
-    images.push(match[1])
-  }
-  return images
+  return (article.value as any)?.images || []
 })
 
 const formatDate = (date: string) => {

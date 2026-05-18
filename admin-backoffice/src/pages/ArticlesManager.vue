@@ -142,17 +142,8 @@
             <textarea class="input" rows="2" placeholder="Short excerpt..." v-model="formData.excerpt"></textarea>
           </div>
           <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="label mb-0">Content</label>
-              <button type="button" @click="showImageInserter = true" class="text-xs text-primary hover:underline flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Insert Image
-              </button>
-            </div>
-            <textarea ref="contentTextarea" class="input font-mono text-sm" rows="10" placeholder="Full article content (HTML supported). Use Insert Image button to add photos..." v-model="formData.content"></textarea>
-            <p class="text-xs text-gray-400 mt-1">Supports HTML. Insert multiple images to create a gallery on the public page.</p>
+            <label class="label">Content</label>
+            <textarea ref="contentTextarea" class="input font-mono text-sm" rows="10" placeholder="Full article content (HTML supported)..." v-model="formData.content"></textarea>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -169,6 +160,25 @@
               <MediaPicker v-model="formData.image" placeholder="Image URL or browse media" />
             </div>
           </div>
+          <!-- Gallery Images -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="label mb-0">Photo Gallery</label>
+              <button type="button" @click="showImageInserter = true" class="text-xs btn-secondary px-2 py-1">
+                <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Photos
+              </button>
+            </div>
+            <div v-if="formData.images.length > 0" class="grid grid-cols-4 gap-2">
+              <div v-for="(img, idx) in formData.images" :key="idx" class="relative aspect-square rounded-lg overflow-hidden border group">
+                <img :src="img" class="w-full h-full object-cover" />
+                <button type="button" @click="formData.images.splice(idx, 1)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+              </div>
+            </div>
+            <p v-else class="text-xs text-gray-400">No gallery photos yet. Click "Add Photos" to select images.</p>
+          </div>
           <div class="flex justify-end space-x-3 pt-4">
             <button type="button" @click="closeForm" class="btn-secondary">Cancel</button>
             <button type="submit" class="btn-primary">{{ editingArticle ? 'Update' : 'Publish' }}</button>
@@ -177,13 +187,13 @@
       </div>
     </div>
 
-    <!-- Insert Image into Content Modal -->
+    <!-- Gallery Image Picker Modal -->
     <div v-if="showImageInserter" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-5 border-b">
-          <h3 class="text-lg font-headline font-semibold">Insert Images into Content</h3>
+          <h3 class="text-lg font-headline font-semibold">Add Photos to Gallery</h3>
           <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-500">Click images to insert, then close</span>
+            <span class="text-sm text-gray-500">Click to select, then Done</span>
             <button @click="showImageInserter = false" class="btn-primary text-sm px-4 py-2">Done</button>
           </div>
         </div>
@@ -195,8 +205,9 @@
               v-for="item in mediaItems"
               :key="item.id"
               type="button"
-              @click="insertImageToContent(item.url)"
-              class="aspect-square rounded-xl border-2 border-gray-200 overflow-hidden hover:border-primary transition-colors"
+              @click="addToGallery(item.url)"
+              class="aspect-square rounded-xl border-2 overflow-hidden hover:border-primary transition-colors"
+              :class="formData.images.includes(item.url) ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'"
             >
               <img v-if="item.type === 'image' || item.type === 'logo'" :src="item.url" :alt="item.altText" class="w-full h-full object-cover" />
               <div v-else class="w-full h-full flex items-center justify-center bg-gray-50 text-xs text-gray-400">
@@ -237,7 +248,8 @@ const formData = ref({
   excerpt: '',
   content: '',
   category: 'health_tips',
-  image: ''
+  image: '',
+  images: [] as string[]
 })
 
 const articles = ref<any[]>([])
@@ -258,7 +270,7 @@ const loadArticles = async () => {
 const closeForm = () => {
   showForm.value = false
   editingArticle.value = null
-  formData.value = { title: '', slug: '', author: '', excerpt: '', content: '', category: 'health_tips', image: '' }
+  formData.value = { title: '', slug: '', author: '', excerpt: '', content: '', category: 'health_tips', image: '', images: [] }
 }
 
 const editArticle = (article: any) => {
@@ -270,7 +282,8 @@ const editArticle = (article: any) => {
     excerpt: article.excerpt || '',
     content: article.content || '',
     category: article.category || 'health_tips',
-    image: article.image || ''
+    image: article.image || '',
+    images: article.images || []
   }
   showForm.value = true
 }
@@ -366,10 +379,14 @@ const loadMedia = async () => {
   finally { mediaLoading.value = false }
 }
 
-const insertImageToContent = (url: string) => {
-  const imgTag = `<img src="${url}" alt="" style="width:100%;border-radius:12px;margin:16px 0" />`
-  formData.value.content += `\n${imgTag}\n`
-  toast.success('Image inserted into content — select more or close')
+const addToGallery = (url: string) => {
+  if (!formData.value.images.includes(url)) {
+    formData.value.images.push(url)
+    toast.success('Photo added to gallery')
+  } else {
+    formData.value.images = formData.value.images.filter(i => i !== url)
+    toast.info('Photo removed from gallery')
+  }
 }
 
 // Load media when image inserter opens

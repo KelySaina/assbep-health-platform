@@ -17,11 +17,12 @@ export class ArticlesService {
       },
       orderBy: { publishedAt: 'desc' },
     });
-    return articles.map((a) => ({
+    return articles.map((a: any) => ({
       id: a.id,
       slug: a.slug,
       category: a.category,
       image: a.image,
+      images: a.images ? JSON.parse(a.images) : [],
       featured_image: a.image,
       publishedAt: a.publishedAt,
       published_at: a.publishedAt,
@@ -39,7 +40,7 @@ export class ArticlesService {
     });
 
     // Flatten translations for admin UI
-    return articles.map(a => {
+    return articles.map((a: any) => {
       const enTranslation = a.translations.find(t => t.language === 'en') || a.translations[0];
 
       return {
@@ -47,6 +48,7 @@ export class ArticlesService {
         slug: a.slug,
         category: a.category,
         image: a.image,
+        images: a.images ? JSON.parse(a.images) : [],
         published: a.published,
         publishedAt: a.publishedAt,
         createdAt: a.createdAt,
@@ -70,6 +72,7 @@ export class ArticlesService {
     if (!article) return null;
     return {
       ...article,
+      images: (article as any).images ? JSON.parse((article as any).images) : [],
       title: article.translations[0]?.title || '',
       excerpt: article.translations[0]?.excerpt || '',
       content: article.translations[0]?.content || '',
@@ -95,6 +98,7 @@ export class ArticlesService {
         slug,
         category: data.category,
         image: data.image,
+        images: data.images ? JSON.stringify(data.images) : null,
         authorId: data.authorId,
         published: true,
         publishedAt: new Date(),
@@ -113,6 +117,7 @@ export class ArticlesService {
         slug: data.slug,
         category: data.category,
         image: data.image,
+        images: data.images ? JSON.stringify(data.images) : undefined,
         published: data.published,
         publishedAt: data.published ? new Date() : null,
       },

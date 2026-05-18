@@ -22,6 +22,7 @@ export interface Program {
   description: string
   content: string
   image: string
+  images: string[]
   category: string
   slug: string
   language: 'en' | 'fr'
@@ -37,6 +38,8 @@ export interface Article {
   content: string
   author: string
   featured_image: string
+  image: string
+  images: string[]
   language: 'en' | 'fr'
   category: string
   published_at: string

@@ -13,11 +13,12 @@ export class ProgramsService {
       },
       orderBy: { order: 'asc' },
     });
-    return programs.map((p) => ({
+    return programs.map((p: any) => ({
       id: p.id,
       slug: p.slug,
       category: p.category,
       image: p.image,
+      images: p.images ? JSON.parse(p.images) : [],
       order: p.order,
       published: p.published,
       title: p.translations[0]?.title || '',
@@ -32,8 +33,7 @@ export class ProgramsService {
       orderBy: { order: 'asc' },
     });
 
-    // Flatten translations for admin UI
-    return programs.map(p => {
+    return programs.map((p: any) => {
       const enTranslation = p.translations.find(t => t.language === 'en') || p.translations[0];
 
       return {
@@ -41,6 +41,7 @@ export class ProgramsService {
         slug: p.slug,
         category: p.category,
         image: p.image,
+        images: p.images ? JSON.parse(p.images) : [],
         order: p.order,
         published: p.published,
         createdAt: p.createdAt,
@@ -65,6 +66,7 @@ export class ProgramsService {
       slug: program.slug,
       category: program.category,
       image: program.image,
+      images: (program as any).images ? JSON.parse((program as any).images) : [],
       order: program.order,
       published: program.published,
       title: program.translations[0]?.title || '',
@@ -94,6 +96,7 @@ export class ProgramsService {
         slug,
         category: data.category,
         image: data.image,
+        images: data.images ? JSON.stringify(data.images) : null,
         order: data.order || 0,
         published: data.published || false,
         translations: {
@@ -112,6 +115,7 @@ export class ProgramsService {
         slug: data.slug,
         category: data.category,
         image: data.image,
+        images: data.images ? JSON.stringify(data.images) : undefined,
         order: data.order,
         published: data.published,
       },

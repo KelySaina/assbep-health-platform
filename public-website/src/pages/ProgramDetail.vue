@@ -19,16 +19,12 @@
       <div class="container-narrow">
         <div class="grid md:grid-cols-3 gap-12">
           <div class="md:col-span-2">
-            <div class="rounded-2xl overflow-hidden mb-8">
+            <div v-if="program?.image" class="rounded-2xl overflow-hidden mb-8">
               <img :src="program?.image" :alt="program?.title" class="w-full h-64 md:h-96 object-cover" />
             </div>
             <div class="prose max-w-none">
               <p class="text-neutral leading-relaxed text-lg">{{ program?.description }}</p>
-              <p class="text-neutral leading-relaxed mt-4">
-                This program aims to provide comprehensive support to communities through accessible healthcare services.
-                Our team of dedicated professionals works tirelessly to ensure that everyone has access to quality care
-                regardless of their location or economic status.
-              </p>
+              <div v-if="program?.content" class="mt-4 text-neutral leading-relaxed" v-html="program.content"></div>
             </div>
           </div>
           <div class="space-y-6">
@@ -39,19 +35,13 @@
                   <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span class="text-neutral">Active Program</span>
+                  <span class="text-neutral">{{ program?.published ? 'Active Program' : 'Draft' }}</span>
                 </li>
                 <li class="flex items-center space-x-3">
                   <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
-                  <span class="text-neutral">Multiple Regions</span>
-                </li>
-                <li class="flex items-center space-x-3">
-                  <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <span class="text-neutral">5,000+ Beneficiaries</span>
+                  <span class="text-neutral capitalize">{{ program?.category }}</span>
                 </li>
               </ul>
             </div>

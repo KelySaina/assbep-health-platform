@@ -181,12 +181,11 @@
     <div v-if="showImageInserter" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col">
         <div class="flex items-center justify-between p-5 border-b">
-          <h3 class="text-lg font-headline font-semibold">Insert Image into Content</h3>
-          <button @click="showImageInserter = false" class="text-gray-400 hover:text-gray-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <h3 class="text-lg font-headline font-semibold">Insert Images into Content</h3>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500">Click images to insert, then close</span>
+            <button @click="showImageInserter = false" class="btn-primary text-sm px-4 py-2">Done</button>
+          </div>
         </div>
         <div class="p-5 flex-1 overflow-y-auto">
           <div v-if="mediaLoading" class="text-center py-8 text-gray-500">Loading media...</div>
@@ -370,8 +369,7 @@ const loadMedia = async () => {
 const insertImageToContent = (url: string) => {
   const imgTag = `<img src="${url}" alt="" style="width:100%;border-radius:12px;margin:16px 0" />`
   formData.value.content += `\n${imgTag}\n`
-  showImageInserter.value = false
-  toast.success('Image inserted into content')
+  toast.success('Image inserted into content — select more or close')
 }
 
 // Load media when image inserter opens

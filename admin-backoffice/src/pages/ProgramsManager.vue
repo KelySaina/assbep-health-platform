@@ -139,7 +139,20 @@
           </div>
           <div>
             <label class="label">Description</label>
-            <textarea class="input" rows="4" placeholder="Program description..." v-model="formData.description"></textarea>
+            <textarea class="input" rows="3" placeholder="Short program description..." v-model="formData.description"></textarea>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="label mb-0">Content</label>
+              <button type="button" @click="showImageInserter = true" class="text-xs btn-secondary px-2 py-1">
+                <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Insert Image
+              </button>
+            </div>
+            <textarea class="input font-mono text-sm" rows="6" placeholder="Detailed content (HTML supported). Use Insert Image to add photos..." v-model="formData.content"></textarea>
+            <p class="text-xs text-gray-400 mt-1">Supports HTML. Insert multiple images for a richer page.</p>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
@@ -162,11 +175,42 @@
         </form>
       </div>
     </div>
+
+    <!-- Insert Image into Content Modal -->
+    <div v-if="showImageInserter" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+      <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-5 border-b">
+          <h3 class="text-lg font-headline font-semibold">Insert Images into Content</h3>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500">Click images to insert, then close</span>
+            <button @click="showImageInserter = false" class="btn-primary text-sm px-4 py-2">Done</button>
+          </div>
+        </div>
+        <div class="p-5 flex-1 overflow-y-auto">
+          <div v-if="mediaLoading" class="text-center py-8 text-gray-500">Loading media...</div>
+          <div v-else-if="mediaItems.length === 0" class="text-center py-8 text-gray-500">No media files found.</div>
+          <div v-else class="grid grid-cols-3 md:grid-cols-4 gap-3">
+            <button
+              v-for="item in mediaItems"
+              :key="item.id"
+              type="button"
+              @click="insertImageToContent(item.url)"
+              class="aspect-square rounded-xl border-2 border-gray-200 overflow-hidden hover:border-primary transition-colors"
+            >
+              <img v-if="item.type === 'image' || item.type === 'logo'" :src="item.url" :alt="item.altText" class="w-full h-full object-cover" />
+              <div v-else class="w-full h-full flex items-center justify-center bg-gray-50 text-xs text-gray-400">
+                {{ item.type }}
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
 import MediaPicker from '@/components/MediaPicker.vue'
@@ -179,10 +223,13 @@ const editingProgram = ref<any>(null)
 const showDeleteModal = ref(false)
 const programToDelete = ref<string | null>(null)
 const selectedPrograms = ref<string[]>([])
-
+const showImageInserter = ref(false)
+const mediaLoading = ref(false)
+const mediaItems = ref<any[]>([])
 const formData = ref({
   title: '',
   description: '',
+  content: '',
   category: 'maternal',
   image: '',
   order: 1,
@@ -206,14 +253,14 @@ const loadPrograms = async () => {
 
 const openCreateForm = () => {
   editingProgram.value = null
-  formData.value = { title: '', description: '', category: 'maternal', image: '', order: 1, published: false }
+  formData.value = { title: '', description: '', content: '', category: 'maternal', image: '', order: 1, published: false }
   showForm.value = true
 }
 
 const closeForm = () => {
   showForm.value = false
   editingProgram.value = null
-  formData.value = { title: '', description: '', category: 'maternal', image: '', order: 1, published: false }
+  formData.value = { title: '', description: '', content: '', category: 'maternal', image: '', order: 1, published: false }
 }
 
 const editProgram = (program: any) => {
@@ -221,6 +268,7 @@ const editProgram = (program: any) => {
   formData.value = {
     title: program.title || '',
     description: program.description || '',
+    content: program.content || '',
     category: program.category || 'maternal',
     image: program.image || '',
     order: program.order || 1,
@@ -305,5 +353,26 @@ const filteredPrograms = computed(() => {
 
 onMounted(() => {
   loadPrograms()
+})
+
+const loadMedia = async () => {
+  mediaLoading.value = true
+  try {
+    const response = await axios.get(`${apiUrl}/media`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` }
+    })
+    mediaItems.value = response.data
+  } catch { mediaItems.value = [] }
+  finally { mediaLoading.value = false }
+}
+
+const insertImageToContent = (url: string) => {
+  const imgTag = `<img src="${url}" alt="" style="width:100%;border-radius:12px;margin:16px 0" />`
+  formData.value.content += `\n${imgTag}\n`
+  toast.success('Image inserted — select more or close')
+}
+
+watch(showImageInserter, (val) => {
+  if (val && mediaItems.value.length === 0) loadMedia()
 })
 </script>

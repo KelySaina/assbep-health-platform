@@ -2,8 +2,8 @@
   <div v-if="article">
     <!-- Hero Header - Newspaper style -->
     <section class="relative">
-      <div v-if="article.featured_image" class="w-full h-[50vh] md:h-[60vh] relative">
-        <img :src="article.featured_image" :alt="article.title" class="w-full h-full object-cover" />
+      <div v-if="article.featured_image" class="w-full max-h-[60vh] relative">
+        <img :src="article.featured_image" :alt="article.title" class="w-full max-h-[60vh] object-contain bg-black/5" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
       </div>
       <div :class="article.featured_image ? 'absolute bottom-0 left-0 right-0' : 'bg-gradient-to-br from-primary to-primary-dark'">

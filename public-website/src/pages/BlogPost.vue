@@ -85,12 +85,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
 const store = useAppStore()
+
+onMounted(async () => {
+  if (store.articles.length === 0) {
+    await store.loadArticles()
+  }
+})
 
 const article = computed(() =>
   store.articles.find((a) => a.slug === route.params.slug)

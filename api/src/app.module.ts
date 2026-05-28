@@ -10,10 +10,12 @@ import { MediaModule } from './media/media.module';
 import { ContactModule } from './contact/contact.module';
 import { SettingsModule } from './settings/settings.module';
 import { UsersModule } from './users/users.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
     PrismaModule,
+    MailerModule,
     AuthModule,
     ProgramsModule,
     ArticlesModule,

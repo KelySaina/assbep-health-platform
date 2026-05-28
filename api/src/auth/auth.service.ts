@@ -1,13 +1,17 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailer: MailerService,
   ) {}
 
   async login(email: string, password: string) {
@@ -116,8 +120,18 @@ export class AuthService {
       data: { password: hashedPassword },
     });
 
-    // In production, send an email. For now, log it.
-    console.log(`[FORGOT PASSWORD] Temporary password for ${email}: ${tempPassword}`);
+    await this.mailer.sendSafe({
+      from: 'no-reply@assbep.org',
+      to: email,
+      subject: 'ASSBEP - Password reset',
+      message:
+        `Hello ${user.name || ''},\n\n` +
+        `A password reset was requested for your ASSBEP account.\n\n` +
+        `Your temporary password is: ${tempPassword}\n\n` +
+        `Please log in and change it immediately from your profile.\n\n` +
+        `If you did not request this, please contact us right away.\n\n` +
+        `— ASSBEP`,
+    });
 
     return { message: 'If this email exists, a reset has been processed.' };
   }

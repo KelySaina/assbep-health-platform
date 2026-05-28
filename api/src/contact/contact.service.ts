@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../mailer/mailer.service';
 
-const DEFAULT_CONTACT_RECIPIENT = 'contact@assbep.org';
+const DEFAULT_CONTACT_RECIPIENT = 'kelysaina@gmail.com';
 
 @Injectable()
 export class ContactService {

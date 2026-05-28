@@ -123,14 +123,21 @@ export class AuthService {
     await this.mailer.sendSafe({
       from: 'no-reply@assbep.org',
       to: email,
-      subject: 'ASSBEP - Password reset',
-      message:
-        `Hello ${user.name || ''},\n\n` +
-        `A password reset was requested for your ASSBEP account.\n\n` +
-        `Your temporary password is: ${tempPassword}\n\n` +
-        `Please log in and change it immediately from your profile.\n\n` +
-        `If you did not request this, please contact us right away.\n\n` +
-        `— ASSBEP`,
+      subject: 'ASSBEP — Password reset',
+      message: `<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
+  <div style="background:linear-gradient(135deg,#0ea5e9,#0369a1);padding:24px 28px">
+    <h1 style="margin:0;color:#fff;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase">ASSBEP — Password reset</h1>
+  </div>
+  <div style="padding:24px 28px;color:#0f172a;font-size:15px;line-height:1.7">
+    <p style="margin:0 0 12px">Hello ${user.name || ''},</p>
+    <p style="margin:0 0 12px">A password reset was requested for your ASSBEP account.</p>
+    <p style="margin:0 0 12px">Your temporary password is:</p>
+    <p style="margin:0 0 16px;font-family:Menlo,Consolas,monospace;font-size:18px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;letter-spacing:1px"><strong>${tempPassword}</strong></p>
+    <p style="margin:0 0 12px">Please log in and change it immediately from your profile.</p>
+    <p style="margin:0;color:#64748b;font-size:13px">If you did not request this, please contact us right away.</p>
+  </div>
+  <div style="padding:14px 28px;background:#f8fafc;border-top:1px solid #e5e7eb;color:#64748b;font-size:12px">— ASSBEP</div>
+</div>`,
     });
 
     return { message: 'If this email exists, a reset has been processed.' };

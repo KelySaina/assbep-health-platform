@@ -103,9 +103,9 @@ onMounted(() => {
 
 const currentYear = new Date().getFullYear()
 
-const contactAddress = computed(() => store.siteSettings.contact_address || 'Yaoundé, Cameroon')
-const contactPhone = computed(() => store.siteSettings.contact_phone || '+237 6XX XXX XXX')
-const contactEmail = computed(() => store.siteSettings.contact_email || 'contact@assbep.org')
+const contactAddress = computed(() => store.siteSettings.contact_address || 'Antsirabe, Madagascar')
+const contactPhone = computed(() => store.siteSettings.contact_phone || '+261 33 05 977 56')
+const contactEmail = computed(() => store.siteSettings.contact_email || 'alravelomaharavo@gmail.com')
 
 const socialFacebook = computed(() => store.siteSettings.social_facebook || '')
 const socialTwitter = computed(() => store.siteSettings.social_twitter || '')

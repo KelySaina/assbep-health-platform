@@ -145,9 +145,9 @@ const isSubmitting = ref(false)
 const submitStatus = ref<'idle' | 'success' | 'error'>('idle')
 
 const contactInfo = ref({
-  address: 'Yaoundé, Cameroon',
-  phone: '+237 6XX XXX XXX',
-  email: 'contact@assbep.org',
+  address: 'Antsirabe, Madagascar',
+  phone: '+261 33 05 977 56',
+  email: 'alravelomaharavo@gmail.com',
   officeHours: 'Mon-Fri 8:00 AM - 5:00 PM',
   mapUrl: ''
 })

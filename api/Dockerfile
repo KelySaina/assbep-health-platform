@@ -42,7 +42,11 @@ COPY --from=builder /app/dist ./dist
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh
+# Strip CR before chmod: a CRLF shebang resolves to an interpreter named
+# `/bin/sh\r`, and the container dies with "no such file or directory" —
+# naming the script, which is present. .gitattributes should prevent it now;
+# this makes the image correct even if a checkout somewhere does not.
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 
 EXPOSE 4000
 

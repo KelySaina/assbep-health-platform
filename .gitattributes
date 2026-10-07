@@ -1,0 +1,16 @@
+# Shell scripts and Dockerfiles must use LF, always.
+#
+# api/docker-entrypoint.sh was committed with CRLF, which made its shebang
+# `#!/bin/sh\r` — an interpreter that does not exist. The container then failed
+# with "exec ./docker-entrypoint.sh: no such file or directory", which reads as a
+# missing file and is not one: the file is present and executable. Nothing in the
+# repo prevented it, so it survived every commit until the stack was first
+# actually run.
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.Dockerfile    text eol=lf
+docker-entrypoint.sh text eol=lf
+
+# Compose and CI files are read by tools that are less forgiving than editors.
+*.yml           text eol=lf
+*.yaml          text eol=lf

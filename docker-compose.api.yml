@@ -1,23 +1,16 @@
-version: "3.8"
-
+# ============================================================================
+# ASSBEP — production stack (API + Postgres + MinIO). The Vue frontends are on
+# Vercel; nothing here serves them.
+#
+#   User ──► Caddy (on the host) ──► api    /api/*
+#                                └──► minio  /storage/*
+#
+# This stack used to ship its own Caddy bound to 80:80/443:443, which meant it
+# could not share a host with anything else wanting those ports. Routing and TLS
+# are now the host's Caddy, shared with the other apps on this box; see
+# deploy/caddy/assbep.caddyfile and scripts/caddy-site.sh.
+# ============================================================================
 services:
-  caddy:
-    image: caddy:2-alpine
-    container_name: assbep-caddy
-    restart: unless-stopped
-    environment:
-      API_HOSTNAME: ${API_HOSTNAME}
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./deploy/oracle/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      api:
-        condition: service_healthy
-
   postgres:
     image: postgres:16-alpine
     container_name: assbep-postgres
@@ -35,7 +28,19 @@ services:
       retries: 10
 
   minio:
-    image: minio/minio:latest
+    # MinIO deleted minio/minio and minio/mc from Docker Hub in September 2026 and
+    # stopped serving them anonymously from quay.io days later, so `:latest` no
+    # longer resolves at all. Chainguard's free source-built image of the same AGPL
+    # server, pinned by digest because the free tier publishes no version tags —
+    # and because a floating tag on the thing holding uploaded documents was always
+    # the wrong shape. Re-pin deliberately:
+    #   docker pull cgr.dev/chainguard/minio:latest
+    #   docker image inspect cgr.dev/chainguard/minio:latest --format '{{index .RepoDigests 0}}'
+    #
+    # Runs as uid 65532 where MinIO's own ran as root. A volume that already holds
+    # objects needs chowning once, with the stack down:
+    #   docker run --rm -v assbep_minio_data:/d alpine chown -R 65532:65532 /d
+    image: cgr.dev/chainguard/minio@sha256:a05a4497e8dce3cb7a7a1bf1872ba5d30ea988f1e8c22c9e0920503761c4b5f1
     container_name: assbep-minio
     restart: unless-stopped
     environment:
@@ -44,8 +49,17 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    ports:
+      # Loopback only. Caddy serves the public /storage/* prefix from here; the
+      # console on 9001 is published for an SSH tunnel and is routed nowhere.
+      - "${BIND_HOST:-127.0.0.1}:${MINIO_HOST_PORT:-9100}:9000"
+      - "${BIND_HOST:-127.0.0.1}:${MINIO_CONSOLE_HOST_PORT:-9101}:9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      # `mc ready local`, not curl: the Chainguard image ships no curl, wget or nc,
+      # so the old probe could never pass — and it would not fail loudly either.
+      # minio would simply never report healthy, and `api` waits on service_healthy,
+      # so the stack would hang rather than error.
+      test: ["CMD", "mc", "ready", "local"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,6 +70,10 @@ services:
       dockerfile: Dockerfile
     container_name: assbep-api
     restart: unless-stopped
+    ports:
+      # Loopback only: the host Caddy proxies /api/* here. Postgres is not
+      # published at all — nothing outside this network has business with it.
+      - "${BIND_HOST:-127.0.0.1}:${API_HOST_PORT:-4100}:4000"
     environment:
       DATABASE_URL: ${DATABASE_URL}
       JWT_SECRET: ${JWT_SECRET}
@@ -94,7 +112,5 @@ services:
       start_period: 45s
 
 volumes:
-  caddy_data:
-  caddy_config:
   postgres_data:
   minio_data:

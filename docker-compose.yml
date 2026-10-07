@@ -1,5 +1,14 @@
-version: "3.8"
-
+# ============================================================================
+# ASSBEP — local development stack. The deployed one is docker-compose.api.yml
+# (API + Postgres + MinIO, no frontends: those are on Vercel).
+#
+# The credentials below are development defaults and are committed on purpose.
+# Nothing here should ever be what runs in production — and now cannot be
+# reached from off the machine either: every published port binds ${BIND_HOST},
+# which defaults to 127.0.0.1. It used to be 0.0.0.0 on all six, which put
+# Postgres and the MinIO console on whatever network the machine was attached to,
+# with the passwords you can read right below.
+# ============================================================================
 services:
   # ─── PostgreSQL Database ────────────────────────────────────
   postgres:
@@ -11,7 +20,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: assbep
     ports:
-      - "5433:5432"
+      - "${BIND_HOST:-127.0.0.1}:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,12 +31,13 @@ services:
 
   # ─── MinIO (S3-Compatible Storage) ─────────────────────────
   minio:
-    image: minio/minio:latest
+    # See docker-compose.api.yml for why this is no longer minio/minio.
+    image: cgr.dev/chainguard/minio@sha256:a05a4497e8dce3cb7a7a1bf1872ba5d30ea988f1e8c22c9e0920503761c4b5f1
     container_name: assbep-minio
     restart: unless-stopped
     ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Console UI
+      - "${BIND_HOST:-127.0.0.1}:9000:9000"  # API
+      - "${BIND_HOST:-127.0.0.1}:9001:9001"  # Console UI
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -35,7 +45,8 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      # The Chainguard image has no curl; mc is what it can actually run.
+      test: ["CMD", "mc", "ready", "local"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,7 +59,7 @@ services:
     container_name: assbep-api
     restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "${BIND_HOST:-127.0.0.1}:4000:4000"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/assbep?schema=public
       JWT_SECRET: assbep-secret-key-change-in-production
@@ -83,7 +94,7 @@ services:
     container_name: assbep-public
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${BIND_HOST:-127.0.0.1}:3000:80"
     depends_on:
       api:
         condition: service_healthy
@@ -98,7 +109,7 @@ services:
     container_name: assbep-admin
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "${BIND_HOST:-127.0.0.1}:3001:80"
     depends_on:
       api:
         condition: service_healthy

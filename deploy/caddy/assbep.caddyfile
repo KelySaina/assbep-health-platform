@@ -1,0 +1,46 @@
+# ============================================================================
+# ASSBEP — site block for a Caddy running on the host, not in this stack.
+#
+# This replaces deploy/oracle/Caddyfile, which ran inside the compose project and
+# bound 80/443 itself. That made the stack unable to share a machine with anything
+# else, which is why it moved out. The routing is the same; it reaches the
+# services by published loopback port instead of by compose service name.
+#
+# Rendered and installed by scripts/caddy-site.sh from .env.
+# ============================================================================
+
+{$API_HOSTNAME} {
+	encode gzip zstd
+
+	# The Vue frontends are on Vercel and talk to this origin cross-site, so the
+	# API's own CORS headers are load-bearing — nothing here adds, removes or
+	# overrides an Access-Control-* header.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-X-Powered-By
+		-Server
+		-Via
+	}
+
+	# Uploaded documents. handle_path strips the /storage prefix before proxying,
+	# so an object at s3://<bucket>/x.pdf is served at /storage/<bucket>/x.pdf —
+	# the same mapping MINIO_PUBLIC_URL in .env promises the API. `handle_path`
+	# rather than `handle`: with the prefix left on, every object 404s.
+	handle_path /storage/* {
+		reverse_proxy 127.0.0.1:{$MINIO_HOST_PORT:9100}
+	}
+
+	@api path /api/*
+	handle @api {
+		# File uploads go through the API. Caddy applies no response timeout by
+		# default and that is wanted here, so nothing is configured for it.
+		reverse_proxy 127.0.0.1:{$API_HOST_PORT:4100}
+	}
+
+	# Answered by Caddy itself, deliberately: it says "the proxy is up and this
+	# hostname is routed", which is what a DNS or certificate check wants. The
+	# API's own health is /api/programs, behind the matcher above.
+	respond /healthz 200
+}

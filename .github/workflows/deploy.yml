@@ -1,31 +1,48 @@
-name: Deploy to EC2
+name: CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
+
+# A newer push to the same ref cancels an in-flight run (no overlapping deploys).
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Deploy Stack to VPS
+    name: Deploy to VPS
     runs-on: ubuntu-latest
-
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}y
-
+          # Key, not password. The previous version authenticated with
+          # VPS_PASSWORD — and appended a stray `y` to it, so it could not have
+          # worked against any host. A key also means nothing reusable is typed
+          # into a secret that someone may also use to log in by hand.
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          command_timeout: 15m
           script: |
-            cd ${{ secrets.PROJECT_PATH }}
-            git pull https://${{ secrets.GH_TOKEN }}@github.com/${{ secrets.GH_REPO }}.git main
-            docker compose down
-            docker compose up -d --build
-            docker restart assbep-caddy
-            docker image prune -f
-            echo "✅ Deployment completed!"
-            docker compose ps
+            set -e
+            DEPLOY_DIR="${ASSBEP_DIR:-$HOME/assbep-health-platform}"
+            if [ ! -d "$DEPLOY_DIR/.git" ]; then
+              echo "::error::$DEPLOY_DIR is not a git checkout on this host — bootstrap it once, then re-run:"
+              echo "  git clone https://github.com/${{ github.repository }}.git $DEPLOY_DIR"
+              echo "  cp $DEPLOY_DIR/.env.api.production.example $DEPLOY_DIR/.env   # then fill it in"
+              exit 1
+            fi
+            cd "$DEPLOY_DIR"
+            # Sync to this commit FIRST, so the right compose file and deploy
+            # script exist before we run them. The previous version pulled with a
+            # token inlined in the URL, which put it in the box's shell history;
+            # an extraheader keeps it out, and a public repo needs neither.
+            export GITHUB_TOKEN='${{ secrets.GITHUB_TOKEN }}'
+            git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')" fetch --all --prune
+            git checkout --force '${{ github.sha }}'
+            export IMAGE_TAG='${{ github.sha }}'
+            bash scripts/deploy.sh

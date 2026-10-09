@@ -268,9 +268,9 @@
               <button
                 v-for="media in mediaLibrary.filter(m => m.type === 'image')"
                 :key="media.id"
-                @click="selectMediaImage(media.url)"
+                @click="selectMediaImage(media)"
                 class="aspect-square rounded-lg overflow-hidden border-2 hover:border-primary transition-colors"
-                :class="profileData.profilePicture === media.url ? 'border-primary ring-2 ring-primary' : 'border-gray-200'"
+                :class="(profileData.profilePicture || '').split('#')[0] === media.url ? 'border-primary ring-2 ring-primary' : 'border-gray-200'"
               >
                 <img :src="media.url" :alt="media.altText || 'Media'" class="w-full h-full object-cover" />
               </button>
@@ -288,7 +288,7 @@
 </template>
 
 <script setup lang="ts">
-import { focalStyle } from '../utils/focal'
+import { focalStyle, withFocal } from '../utils/focal'
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'
@@ -431,8 +431,15 @@ const uploadNewImage = async (event: Event) => {
   }
 }
 
-const selectMediaImage = (url: string) => {
-  profileData.profilePicture = url
+const selectMediaImage = (media: any) => {
+  // Stamp the library row's focal onto the URL we store, the way MediaPicker does.
+  // profilePicture is a bare URL with no link back to the Media row, so without
+  // this the framing set in the library never reaches the team photo — it reads
+  // this string, not the row.
+  profileData.profilePicture = withFocal(media.url, {
+    x: Number.isFinite(Number(media.focalX)) ? Number(media.focalX) : 50,
+    y: Number.isFinite(Number(media.focalY)) ? Number(media.focalY) : 50,
+  })
 }
 
 const updateProfile = async () => {

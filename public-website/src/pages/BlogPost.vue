@@ -3,7 +3,7 @@
     <!-- Hero Header - Newspaper style -->
     <section class="relative">
       <div v-if="article.featured_image" class="w-full max-h-[60vh] relative">
-        <img :src="article.featured_image" :alt="article.title" class="w-full max-h-[60vh] object-contain bg-black/5" />
+        <img :src="article.featured_image" :style="focalStyle(article.featured_image)" :alt="article.title" class="w-full max-h-[60vh] object-contain bg-black/5" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
       </div>
       <div :class="article.featured_image ? 'absolute bottom-0 left-0 right-0' : 'bg-gradient-to-br from-primary to-primary-dark'">
@@ -54,7 +54,7 @@
             <h3 class="font-headline font-semibold text-xl mb-6">Gallery</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div v-for="(img, index) in galleryImages" :key="index" class="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-                <img :src="img" class="w-full h-full object-cover" />
+                <img :src="img" :style="focalStyle(img)" class="w-full h-full object-cover" />
               </div>
             </div>
           </div>
@@ -85,6 +85,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'

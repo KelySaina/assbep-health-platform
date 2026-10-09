@@ -34,6 +34,7 @@
                 <img
                   v-if="member.profilePicture"
                   :src="member.profilePicture"
+                  :style="focalStyle(member.profilePicture)"
                   :alt="member.name"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -95,6 +96,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 

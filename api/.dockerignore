@@ -1,0 +1,21 @@
+# node_modules must never enter the build context. The Dockerfile runs `npm ci`
+# and `npx prisma generate` and then `COPY . .`, so a node_modules copied from the
+# host lands ON TOP of the freshly generated Prisma client — replacing it with
+# whatever stale one happened to be on the host. The symptom is a type error about
+# fields that plainly exist in schema.prisma (`images`, `translations`, `focalX`),
+# because the client tsc sees was generated from an older schema. Diagnosed exactly
+# that way after the focal-point change.
+node_modules
+.prisma
+
+# Secrets have no business in an image layer, and .env in the context means
+# `COPY . .` bakes the production database password and MinIO keys into the build.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Not needed at build time; just slows the context transfer.
+.git
+dist
+*.log

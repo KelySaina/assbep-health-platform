@@ -133,7 +133,7 @@
 
     <!-- Edit Modal -->
     <div v-if="showEditModal && editingMedia" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl max-w-lg w-full p-6">
+      <div class="bg-white rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-xl font-headline font-semibold">Edit Media</h3>
           <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600">
@@ -155,6 +155,13 @@
               <option value="logo">Logo</option>
               <option value="video">Video</option>
             </select>
+          </div>
+          <div v-if="editingMedia.type === 'image' || editingMedia.type === 'logo'">
+            <FocalPointPicker
+              :url="editingMedia.url"
+              :alt="editingMedia.altText"
+              v-model="editingFocal"
+            />
           </div>
           <div>
             <label class="label">URL</label>
@@ -227,6 +234,8 @@
 </template>
 
 <script setup lang="ts">
+import FocalPointPicker from '../components/FocalPointPicker.vue'
+import { DEFAULT_FOCAL, type Focal } from '../utils/focal'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
@@ -243,6 +252,10 @@ const showDeleteModal = ref(false)
 const mediaToDelete = ref<string | null>(null)
 const showEditModal = ref(false)
 const editingMedia = ref<any>(null)
+// Held apart from editingMedia so Cancel really cancels: editingMedia is a copy of
+// the row, but the picker writes continuously as you drag, and binding it straight
+// onto that object would leave the change applied in the grid after closing.
+const editingFocal = ref<Focal>({ ...DEFAULT_FOCAL })
 const isUpdating = ref(false)
 const showPreview = ref(false)
 const previewItem = ref<any>(null)
@@ -368,6 +381,13 @@ const copyUrl = async (url: string) => {
 
 const editMedia = (item: any) => {
   editingMedia.value = { ...item }
+  // Rows written before framing existed have no focal columns; the API defaults
+  // them to 50/50, but a cached response from an older deploy may not carry them
+  // at all, so fall back here too rather than handing the picker undefined.
+  editingFocal.value = {
+    x: Number.isFinite(Number(item.focalX)) ? Number(item.focalX) : DEFAULT_FOCAL.x,
+    y: Number.isFinite(Number(item.focalY)) ? Number(item.focalY) : DEFAULT_FOCAL.y,
+  }
   showEditModal.value = true
 }
 
@@ -384,6 +404,8 @@ const updateMedia = async () => {
     await axios.put(`${apiUrl}/media/${editingMedia.value.id}`, {
       altText: editingMedia.value.altText,
       type: editingMedia.value.type,
+      focalX: editingFocal.value.x,
+      focalY: editingFocal.value.y,
     }, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('admin_token')}`

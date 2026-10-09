@@ -32,11 +32,11 @@
               v-for="item in mediaItems"
               :key="item.id"
               type="button"
-              @click="selectItem(item.url)"
+              @click="selectItem(urlWithFraming(item))"
               class="aspect-square rounded-xl border-2 overflow-hidden hover:border-primary transition-colors"
               :class="modelValue === item.url ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200'"
             >
-              <img v-if="item.type === 'image' || item.type === 'logo'" :src="item.url" :alt="item.altText" class="w-full h-full object-cover" />
+              <img v-if="item.type === 'image' || item.type === 'logo'" :src="item.url" :alt="item.altText" class="w-full h-full object-cover" :style="focalStyle(urlWithFraming(item))" />
               <div v-else class="w-full h-full flex items-center justify-center bg-gray-50">
                 <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -51,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import { withFocal, focalStyle } from '../utils/focal'
 import { ref, watch } from 'vue'
 import axios from 'axios'
 
@@ -87,6 +88,21 @@ watch(showPicker, (val) => {
     loadMedia()
   }
 })
+
+/**
+ * Carry the media row's framing into the URL that gets stored on the article,
+ * programme or partner. Those columns hold a bare URL with no link back to the
+ * media row, so this is what lets the public site know where to look without an
+ * extra request — see utils/focal.ts.
+ *
+ * A centred focal point adds no fragment, so picking an unframed image stores
+ * exactly the same string it always did.
+ */
+const urlWithFraming = (item: any): string =>
+  withFocal(item.url, {
+    x: Number.isFinite(Number(item.focalX)) ? Number(item.focalX) : 50,
+    y: Number.isFinite(Number(item.focalY)) ? Number(item.focalY) : 50,
+  })
 
 const selectItem = (url: string) => {
   emit('update:modelValue', url)

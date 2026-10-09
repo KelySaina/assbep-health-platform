@@ -19,7 +19,7 @@
             class="card text-center group"
           >
             <div class="h-20 flex items-center justify-center mb-4 grayscale group-hover:grayscale-0 transition-all">
-              <img :src="partner.logo" :alt="partner.name" class="max-h-16 max-w-full object-contain" />
+              <img :src="partner.logo" :style="focalStyle(partner.logo)" :alt="partner.name" class="max-h-16 max-w-full object-contain" />
             </div>
             <h3 class="font-headline font-semibold text-gray-900 group-hover:text-primary transition-colors">
               {{ partner.name }}
@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import { onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 

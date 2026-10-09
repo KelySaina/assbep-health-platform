@@ -151,6 +151,16 @@ model Media {
   type      String // image, document, logo, video
   altText   String?  @map("alt_text")
   size      Int      @default(0)
+  // Framing ("cadrage"): the point of the image that must stay visible when it is
+  // cropped to fit a box, as percentages from the top-left. 50/50 is the centre,
+  // which is what object-cover does on its own — so the defaults reproduce today's
+  // behaviour exactly and every existing row is already correct.
+  //
+  // Nothing is cropped on upload. The original object in MinIO is never touched;
+  // this only says where to look, so a photo can be re-framed later, as often as
+  // you like, without re-uploading it.
+  focalX    Float    @default(50) @map("focal_x")
+  focalY    Float    @default(50) @map("focal_y")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("media")

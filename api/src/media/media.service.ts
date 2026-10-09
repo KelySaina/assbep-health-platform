@@ -109,7 +109,33 @@ export class MediaService implements OnModuleInit {
   }
 
   async update(id: string, data: any) {
-    return this.prisma.media.update({ where: { id }, data });
+    // Pick the fields that may be edited rather than forwarding the body. The
+    // previous version handed `data` straight to Prisma, so a caller could also
+    // rewrite id, url, size or createdAt — and `url` in particular is what every
+    // article and programme references by value, so changing it here would orphan
+    // them silently.
+    const patch: Record<string, unknown> = {};
+    if (typeof data?.altText === 'string') patch.altText = data.altText;
+    if (typeof data?.type === 'string') patch.type = data.type;
+    if (typeof data?.filename === 'string') patch.filename = data.filename;
+
+    // Framing. Clamped rather than rejected: these arrive from a click on an
+    // image, so a value slightly outside the box is a rounding artefact, not an
+    // error worth failing a save over. Anything unparseable is ignored, which
+    // leaves the stored value alone instead of resetting it to the centre.
+    const focalX = MediaService.toPercent(data?.focalX);
+    const focalY = MediaService.toPercent(data?.focalY);
+    if (focalX !== null) patch.focalX = focalX;
+    if (focalY !== null) patch.focalY = focalY;
+
+    return this.prisma.media.update({ where: { id }, data: patch });
+  }
+
+  private static toPercent(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
+    return Math.min(100, Math.max(0, n));
   }
 
   async remove(id: string) {

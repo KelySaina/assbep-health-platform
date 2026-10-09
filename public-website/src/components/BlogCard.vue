@@ -1,7 +1,7 @@
 <template>
   <router-link :to="`/blog/${article.slug}`" class="card group cursor-pointer">
     <div class="aspect-video rounded-xl overflow-hidden mb-4">
-      <img :src="article.featured_image" :alt="article.title"
+      <img :src="article.featured_image" :style="focalStyle(article.featured_image)" :alt="article.title"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
     </div>
     <div class="flex items-center space-x-2 mb-2">
@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import type { Article } from '@/types'
 
 defineProps<{ article: Article }>()

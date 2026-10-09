@@ -20,7 +20,7 @@
         <div class="grid md:grid-cols-3 gap-12">
           <div class="md:col-span-2">
             <div v-if="program?.image" class="rounded-2xl overflow-hidden mb-8">
-              <img :src="program?.image" :alt="program?.title" class="w-full h-64 md:h-96 object-cover" />
+              <img :src="program?.image" :style="focalStyle(program?.image)" :alt="program?.title" class="w-full h-64 md:h-96 object-cover" />
             </div>
             <div class="prose max-w-none">
               <p class="text-neutral leading-relaxed text-lg">{{ program?.description }}</p>
@@ -31,7 +31,7 @@
               <h3 class="font-headline font-semibold text-xl mb-4">Gallery</h3>
               <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div v-for="(img, index) in program.images" :key="index" class="aspect-square rounded-xl overflow-hidden hover:opacity-90 transition-opacity">
-                  <img :src="img" class="w-full h-full object-cover" />
+                  <img :src="img" :style="focalStyle(img)" class="w-full h-full object-cover" />
                 </div>
               </div>
             </div>
@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'

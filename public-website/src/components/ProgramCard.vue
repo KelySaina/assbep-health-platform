@@ -1,7 +1,7 @@
 <template>
   <router-link :to="`/programs/${program.slug}`" class="card group cursor-pointer">
     <div class="aspect-video rounded-xl overflow-hidden mb-4">
-      <img :src="program.image" :alt="program.title"
+      <img :src="program.image" :style="focalStyle(program.image)" :alt="program.title"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
     </div>
     <span class="inline-block px-3 py-1 text-xs font-medium bg-primary-light text-primary rounded-full mb-2">
@@ -21,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import type { Program } from '@/types'
 defineProps<{ program: Program }>()
 </script>

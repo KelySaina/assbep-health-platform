@@ -16,7 +16,7 @@
         <div class="flex-shrink-0">
           <div class="relative group">
             <div class="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-              <img v-if="profileData.profilePicture" :src="profileData.profilePicture" alt="Profile" class="w-full h-full object-cover" />
+              <img v-if="profileData.profilePicture" :src="profileData.profilePicture" :style="focalStyle(profileData.profilePicture)" alt="Profile" class="w-full h-full object-cover" />
               <span v-else>{{ authStore.user?.name?.charAt(0) || 'U' }}</span>
             </div>
             <button @click="showMediaPicker = true" class="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -288,6 +288,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'

@@ -31,7 +31,7 @@
               <td class="py-3 px-3">
                 <div class="flex items-center space-x-3">
                   <div v-if="user.profilePicture" class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
-                    <img :src="user.profilePicture" :alt="user.name" class="w-full h-full object-cover" />
+                    <img :src="user.profilePicture" :style="focalStyle(user.profilePicture)" :alt="user.name" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="w-8 h-8 bg-primary-light rounded-lg flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">
                     {{ user.name.charAt(0) }}
@@ -131,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import { focalStyle } from '../utils/focal'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'

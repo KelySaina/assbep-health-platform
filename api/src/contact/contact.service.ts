@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailerService } from '../mailer/mailer.service';
 
-const DEFAULT_CONTACT_RECIPIENT = 'kelysaina@gmail.com';
 
 @Injectable()
 export class ContactService {
@@ -26,11 +25,16 @@ export class ContactService {
     return saved;
   }
 
-  private async resolveRecipient(): Promise<string> {
+  // The recipient is whatever the site is configured to show as its contact
+  // address — the `contact_email` setting, the same value the public page reads.
+  // There is deliberately no baked-in fallback: a message must go to the address
+  // the site currently advertises or to nowhere, never to a stale hardcoded inbox.
+  private async resolveRecipient(): Promise<string | null> {
     const row = await this.prisma.siteSetting
       .findUnique({ where: { key: 'contact_email' } })
       .catch(() => null);
-    return row?.value || DEFAULT_CONTACT_RECIPIENT;
+    const value = (row?.value || '').trim();
+    return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value) ? value : null;
   }
 
   private buildHtml(data: { name: string; email: string; subject: string; message: string }): string {
@@ -56,6 +60,14 @@ export class ContactService {
 
   private async notify(data: { name: string; email: string; subject: string; message: string }) {
     const to = await this.resolveRecipient();
+    if (!to) {
+      // The submission is already saved; it is visible in the admin contact list.
+      this.logger.warn(
+        'No valid contact_email configured — contact request saved but no email sent. ' +
+          'Set it in admin → Settings.',
+      );
+      return;
+    }
     await this.mailer.send({
       from: data.email,
       to,
